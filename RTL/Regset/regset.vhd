@@ -2,6 +2,9 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+library unisim;
+use unisim.vcomponents.all;
+
 entity regset is
     port (clk : in std_logic;
           we  : in std_logic;
