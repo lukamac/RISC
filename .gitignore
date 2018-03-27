@@ -67,3 +67,6 @@ _xmsgs/
 
 # user generated ignores
 *.log
+
+# Vim gitignore
+*.swp
