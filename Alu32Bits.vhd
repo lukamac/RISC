@@ -163,7 +163,7 @@ begin
 		output=>co);
 		
 		zeros<=(others=>'0');
-		sol<=salaux;
+		sol<=outaux;
 		z<='1' when (outaux=zeros and op_alu/="1000") OR (zbis='1' and op_alu="1000") else '0' ;
 		
 end structural;
