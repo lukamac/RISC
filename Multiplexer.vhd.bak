@@ -2,21 +2,21 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity Multiplexador is
+entity Multiplexer is
 
 port(
-	mult,sum,desp,comp,opNand : in std_logic;
+	mult,add,disp,comp,opNand : in std_logic;
 	sel:in std_logic_vector(3 downto 0);
-	salida: out std_logic);
-end Multiplexador;
+	output: out std_logic);
+end Multiplexer;
 
-architecture structural of Multiplexador is
+architecture structural of Multiplexer is
 
 begin
-	salida<= sum when sel(3 downto 1)="000" else
+	output<= add when sel(3 downto 1)="000" else
 				mult when sel(3 downto 1)="001" else 
 				opNand when sel(3 downto 0)="0100" else
-				desp when sel(3 downto 2)="01" else
+				disp when sel(3 downto 2)="01" else
 				comp when sel(3)='1';
 				
 end structural;
