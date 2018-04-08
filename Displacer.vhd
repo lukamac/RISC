@@ -2,17 +2,17 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity Displacer is
+entity Shifter is
 	generic(
 		g_numBits: integer:=6);
 	port(
 			a: in std_logic_vector(g_numBits-1 downto 0);
 			left_right, sig_unsig : in std_logic; --0 Left, 1 Right     0 Sig  1 Unsig
 			s: out std_logic_vector(g_numBits-1 downto 0));
-end Displacer;
+end Shifter;
 
 	
-architecture structural of Displacer is 
+architecture structural of Shifter is 
 
 begin
 
