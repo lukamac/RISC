@@ -10,8 +10,8 @@ package op_codes is
     constant ANDI_OP    : op_t := "00110";
     constant OR_OP      : op_t := "00111";
     constant ORI_OP     : op_t := "11000";
-    constant SHR_OP     : op_t := "01000";
+    constant SH_OP      : op_t := "01000";
     constant SHL_OP     : op_t := "01001";
-    constant SHA_OP     : op_t := "01010";
+    constant SHRA_OP    : op_t := "01010";
     constant SHC_OP     : op_t := "01011";
 end package op_codes;
