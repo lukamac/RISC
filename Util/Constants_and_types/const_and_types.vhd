@@ -7,6 +7,9 @@ package RISC_const_and_types is
     subtype word_t is std_logic_vector(WORD_SIZE - 1 downto 0);
 
     constant OP_SIZE : integer := 5;
-    subtype op_t : std_logic_vector(OP_SIZE - 1 downto 0);
+    subtype op_t is std_logic_vector(OP_SIZE - 1 downto 0);
+
+    constant SHIFT_AMOUNT_SIZE : integer := 5;
+    subtype s_amount_t is std_logic_vector(SHIFT_AMOUNT_SIZE - 1 downto 0);
 
 end package RISC_const_and_types;

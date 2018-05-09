@@ -6,52 +6,108 @@ use work.RISC_const_and_types.all;
 use work.OP_CODES.all;
 
 
-
 entity alu is
     port
     (
         op      : in op_t;
-        a       : in word_t;
-        b       : in word_t;
-        res     : out word_t;
+        b, c    : in word_t;
+
+        a       : out word_t
     );
 end entity alu;
 
 architecture rtl of alu is
 
-    signal adder_a, adder_b : signed(word_t'range);
-    signal not_b : word_t;
+    component right_tri_shifter is
+        port
+        (
+            op      : in op_t;
+            a       : in word_t;
+            amt     : in s_amount_t;
 
-    signal state_reg, state_next : word_t;
+            res     : out word_t
+        );
+    end component right_tri_shifter;
+
+    component left_shifter is
+        port
+        (
+            a   : in word_t;
+            amt : in s_amount_t;
+            
+            res : out word_t
+        );
+    end component left_shifter;
+
+    signal adder_res, adder_b, adder_c : signed(word_t'range);
+    signal b_or_c, b_and_c  : word_t;
+    signal s_res : word_t;
+    signal not_c : word_t;
+    signal neg_c : word_t;
+    signal rts_res, ls_res : word_t;
+    signal s_amt : s_amount_t;
 
 begin
 
-    process (clk) is
+    choose_result: process (op, b, adder_res, neg_c, not_c, b_and_c, b_or_c, rts_res, ls_res) is
     begin
-        if (rising_edge(clk)) then
-            if (rst = '1') then
-                state_reg <= (others => '0');
-            else
-                state_reg <= state_next;
-            end if;
-        end if;
-    end;
-
-    alu_execution: process (op, a, b) is
-    begin
-        adder_a <= a;
-        adder_b <= b;
-        res <= adder;
+        a <= std_logic_vector(adder_res);
         case (op) is
-            when ADD =>
-            when SUB =>
-                adder_b <= (signed(not_b) + 1);
-            when ADDI =>
+            when ADD_OP =>
+            when SUB_OP =>
+            when ADDI_OP =>
+            when NEG_OP =>
+                a <= neg_c;
+            when NOT_OP =>
+                a <= not_c;
+            when AND_OP =>
+                a <= b_and_c;
+            when ANDI_OP =>
+                a <= b_and_c;
+            when OR_OP =>
+                a <= b_or_c;
+            when ORI_OP =>
+                a <= b_or_c;
+            when SHR_OP =>
+                a <= rts_res;
+            when SHL_OP =>
+                a <= ls_res;
+            when SHA_OP =>
+                a <= rts_res;
+            when SHC_OP =>
+                a <= rts_res;
+            when others =>
         end case;
-    end process;
+    end process choose_result;
 
-    not_b <= not b;
 
-    adder <= adder_a + adder_b;
+    -- Shifters
+    s_amt <= c(s_amount_t'range);
 
-end architecture alu;
+    rts : component right_tri_shifter port map(op => op,
+                                               a => b,
+                                               amt => s_amt,
+                                               res => rts_res
+                                              );
+
+    ls  : component left_shifter      port map(a => b,
+                                               amt => s_amt,
+                                               res => ls_res
+                                              );
+
+    -- Logical operations
+    not_c <= not c;
+    neg_c <= std_logic_vector(unsigned(not_c) + 1);
+
+    b_or_c  <= b or  c;
+    b_and_c <= b and c;
+
+
+    -- Adder
+    adder_b <= signed(b);
+    adder_c <= signed(neg_c) when op = SUB_OP else
+               signed(c);
+
+    adder_res <= adder_b + adder_c;
+
+end architecture rtl;
