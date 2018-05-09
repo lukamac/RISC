@@ -12,7 +12,6 @@ entity EX_stage is
     port
     (
         clk, rst            : in std_logic;
-        b_sel, c_sel        : in std_logic;
         op                  : in op_t;
         imm, b, c, pc       : in word_t;
 
@@ -64,11 +63,11 @@ begin
         end if;
     end process;
 
-    alu_b <= b_reg when b_sel = '1' else
-             pc_reg;
+    alu_b <= b_reg; -- TODO dodati kao i dolje ali za pc_reg
 
-    alu_c <= c_reg when c_sel = '1' else
-             imm_reg;
+    with op select
+        alu_c <= imm_reg when ADDI_OP | ANDI_OP | ORI_OP,
+                 c_reg   when others;
 
     mdr_out <= b_reg;
 

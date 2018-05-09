@@ -18,7 +18,6 @@ architecture beh of EX_stage_tb is
         port
         (
             clk, rst        : in std_logic;
-            b_sel, c_sel    : in std_logic;
             op              : in op_t;
             imm, b, c, pc   : in word_t;
 
@@ -26,7 +25,7 @@ architecture beh of EX_stage_tb is
         );
     end component EX_stage;
 
-    signal clk, rst, b_sel, c_sel : std_logic;
+    signal clk, rst : std_logic;
     signal op : op_t;
     signal imm, b, c, pc, alu_res, mdr_out : word_t;
 
@@ -37,8 +36,6 @@ begin
 
     uut : component EX_stage port map (clk      => clk,
                                        rst      => rst,
-                                       b_sel    => b_sel,
-                                       c_sel    => c_sel,
                                        op       => op,
                                        imm      => imm,
                                        b        => b,
@@ -65,8 +62,6 @@ begin
         op <= ADD_OP;
         b <= X"00000004";
         c <= X"00000003";
-        b_sel <= '1';
-        c_sel <= '1';
         wait for t_wait;
 
         op <= SUB_OP;
