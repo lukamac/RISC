@@ -30,6 +30,7 @@ architecture rtl of IF_stage is
 	signal pc_reg : std_logic_vector(31 downto 0) := (others => '0'); -- Program counter register
 	signal pc_add_4 : std_logic_vector(31 downto 0) := (others => '0');
 	signal ir_reg : std_logic_vector(31 downto 0) := (others => '0'); -- Instruction register
+	signal pc_out_reg : std_logic_vector(31 downto 0) := (others => '0'); -- PC output register
 	signal pc_next : std_logic_vector(31 downto 0) := (others => '0'); -- Next value for program counter register
 	
 begin
@@ -46,20 +47,8 @@ begin
 		end if;
 	end process pc_reg_proc;
 	
-	-- IR register process -- we will delete this if we are 1 clock late in the next stage (that depends on memory implementation)
-	ir_reg_proc: process(clk) is
-	begin
-		if (rising_edge(clk)) then
-			if(rst = '1') then
-				ir_reg <= (others => '0');
-			else
-				ir_reg <= instr_data;
-			end if;
-		end if;
-	end process ir_reg_proc;
-	
 	-- IR output
-	ir_out <= ir_reg;
+	ir_out <= instr_data;
 	
 	-- PC incrementer
 	pc_add_4 <= pc_reg + 4;
@@ -73,7 +62,16 @@ begin
 	instr_addr <= pc_reg;
 	
 	-- PC output
-	pc_out <= pc_add_4;
+	pc_out_reg_proc: process(clk) is
+	begin
+		if (rising_edge(clk)) then
+			if(rst = '1') then
+				pc_out_reg <= (others => '0');
+			else
+				pc_out_reg <= pc_add_4;
+			end if;
+		end if;
+	end process pc_out_reg_proc;
 
 end rtl;
 
