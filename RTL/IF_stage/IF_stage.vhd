@@ -16,7 +16,7 @@ entity IF_stage is
 		pc_alu_res_in  : in std_logic_vector(31 downto 0);
 		
 		-- PC multiplexer control signal
-		pc_in_mux_ctrl	: in std_logic;
+		ctrl_pc_in_mux	: in std_logic;
 		
 		-- IF stage outputs
 		pc_out			: out std_logic_vector(31 downto 0);
@@ -46,7 +46,7 @@ begin
 		end if;
 	end process pc_reg_proc;
 	
-	-- IR register process -- we will delete this if we are 1 clock late in the next stage (that depends on memory)
+	-- IR register process -- we will delete this if we are 1 clock late in the next stage (that depends on memory implementation)
 	ir_reg_proc: process(clk) is
 	begin
 		if (rising_edge(clk)) then
@@ -65,24 +65,15 @@ begin
 	pc_add_4 <= pc_reg + 4;
 	
 	-- PC input mux
-	with pc_in_mux_ctrl select
+	with ctrl_pc_in_mux select
 		pc_next <=  pc_add_4 when '0',
 						pc_alu_res_in when others;
 	
-	-- Instruction addres output
+	-- Instruction address output
 	instr_addr <= pc_reg;
 	
-	-- PC output register process
-	pc_out_proc: process(clk) is
-	begin
-		if (rising_edge(clk)) then
-			if(rst = '1') then
-				pc_out <= (others => '0');
-			else
-				pc_out <= pc_add_4;
-			end if;
-		end if;
-	end process pc_out_proc;
+	-- PC output
+	pc_out <= pc_add_4;
 
 end rtl;
 
