@@ -1,7 +1,6 @@
-
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
---USE ieee.numeric_std.ALL;
+
  
 ENTITY IF_stage_tb IS
 END IF_stage_tb;
@@ -37,7 +36,7 @@ ARCHITECTURE behavior OF IF_stage_tb IS
    signal ir_out : std_logic_vector(31 downto 0);
 
    -- Clock period definitions
-   constant clk_period : time := 20 ns;
+   constant clk_period : time := 10 ns;
  
 BEGIN
  
@@ -65,13 +64,14 @@ BEGIN
 
    -- Stimulus process
    stim_proc: process
-   begin		
+   begin
       rst <= '1';
-      wait for 100 ns;	
+      wait for 100 ns;
 		rst <='0';
       ctrl_pc_in_mux <= '0'; -- PC in is PC + 4
-
+		
       wait;
    end process;
-
+	
+	
 END;
