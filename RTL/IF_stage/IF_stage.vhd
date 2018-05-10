@@ -1,6 +1,8 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
+library work;
+use work.RISC_const_and_types.all;
 
 entity IF_stage is
 	port(
@@ -9,29 +11,29 @@ entity IF_stage is
 		rst				: in std_logic;
 		
 		-- Memory interface
-		instr_addr 		: out std_logic_vector(31 downto 0);
-		instr_data		: in std_logic_vector(31 downto 0);
+		instr_addr 		: out address_t;
+		instr_data		: in word_t;
 		
 		-- PC multiplexer inputs
-		pc_alu_res_in  : in std_logic_vector(31 downto 0);
+		pc_alu_res_in  : in word_t;
 		
 		-- PC multiplexer control signal
 		ctrl_pc_in_mux	: in std_logic;
 		
 		-- IF stage outputs
-		pc_out			: out std_logic_vector(31 downto 0);
-		ir_out			: out std_logic_vector(31 downto 0)
+		pc_out			: out address_t;
+		ir_out			: out word_t
 	);
 	
 end IF_stage;
 
 architecture rtl of IF_stage is
 	
-	signal pc_reg : std_logic_vector(31 downto 0) := (others => '0'); -- Program counter register
-	signal pc_add_4 : std_logic_vector(31 downto 0) := (others => '0');
-	signal ir_reg : std_logic_vector(31 downto 0) := (others => '0'); -- Instruction register
-	signal pc_out_reg : std_logic_vector(31 downto 0) := (others => '0'); -- PC output register
-	signal pc_next : std_logic_vector(31 downto 0) := (others => '0'); -- Next value for program counter register
+	signal pc_reg : address_t := (others => '0'); -- Program counter register
+	signal pc_add_4 : address_t := (others => '0');
+	signal ir_reg : word_t := (others => '0'); -- Instruction register
+	signal pc_out_reg : address_t := (others => '0'); -- PC output register
+	signal pc_next : address_t := (others => '0'); -- Next value for program counter register
 	
 begin
 
@@ -74,4 +76,3 @@ begin
 	end process pc_out_reg_proc;
 
 end rtl;
-
