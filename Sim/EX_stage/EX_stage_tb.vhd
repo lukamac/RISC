@@ -22,7 +22,7 @@ architecture beh of EX_stage_tb is
             b, pc           : in word_t;
             ctrl_alu_b      : in std_logic;
             c, imm          : in word_t;
-            ctfl_alu_c      : in std_logic;
+            ctrl_alu_c      : in std_logic;
 
             alu_res, mdr_out    : out word_t
         );
