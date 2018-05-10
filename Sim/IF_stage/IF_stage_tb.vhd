@@ -67,11 +67,22 @@ BEGIN
    begin
       rst <= '1';
       wait for 100 ns;
-		rst <='0';
-      ctrl_pc_in_mux <= '0'; -- PC in is PC + 4
-		
+		rst <= '0';
       wait;
    end process;
 	
+	mem_proc: process -- not sure if this is good behaviour
+	begin
+		wait until rst = '0';
+		wait until clk = '1';
+		instr_data <= X"11111111";
+		wait until clk = '1';
+		instr_data <= X"22222222";
+		wait until clk = '1';
+		instr_data <= X"33333333";
+		wait until clk = '1';
+		instr_data <= X"44444444";
+		wait;
+	end process mem_proc;
 	
 END;
