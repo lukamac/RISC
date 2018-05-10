@@ -12,8 +12,22 @@ entity EX_stage is
     port
     (
         clk, rst            : in std_logic;
-        op                  : in op_t;
-        imm, b, c, pc       : in word_t;
+
+        -- Operation code
+        ctrl_op             : in op_t;
+
+        -- ALU input B, possible inputs
+        b                   : in word_t;
+        pc                  : in address_t;
+
+        -- ALU input B, multiplexer control signal
+        ctrl_alu_b  : in std_logic;
+
+        -- ALU input C, possible inputs
+        c, imm      : in word_t;
+
+        -- ALU input C, multiplexer control signal
+        ctrl_alu_c  : in std_logic;
 
         alu_res, mdr_out    : out word_t
     );
@@ -25,36 +39,36 @@ architecture rtl of EX_stage is
     component alu is
         port
         (
-            op      : in op_t;
-            b, c    : in word_t;
+            op   : in op_t;
+            b, c : in word_t;
 
-            a       : out word_t
+            a    : out word_t
         );
     end component alu;
 
-    signal op_reg : op_t;
+    signal ctrl_op_reg : op_t;
     signal imm_reg, b_reg, c_reg, pc_reg : word_t;
     signal alu_b, alu_c : word_t;
 
 begin
 
-    alu_inst : component alu port map (op => op_reg,
-                                       b => alu_b,
-                                       c => alu_c,
-                                       a => alu_res
+    alu_inst : component alu port map (op => ctrl_op_reg,
+                                       b  => alu_b,
+                                       c  => alu_c,
+                                       a  => alu_res
                                       );
 
     process (clk) is
     begin
         if (rising_edge(clk)) then
             if (rst = '1') then
-                op_reg      <= (others => '0');
+                ctrl_op_reg <= (others => '0');
                 imm_reg     <= (others => '0');
                 b_reg       <= (others => '0');
                 c_reg       <= (others => '0');
                 pc_reg      <= (others => '0');
             else
-                op_reg      <= op;
+                ctrl_op_reg <= ctrl_op;
                 imm_reg     <= imm;
                 b_reg       <= b;
                 c_reg       <= c;
@@ -63,11 +77,11 @@ begin
         end if;
     end process;
 
-    alu_b <= b_reg; -- TODO dodati kao i dolje ali za pc_reg
+    alu_b <= b_reg when ctrl_alu_b = '0' else
+             pc;
 
-    with op select
-        alu_c <= imm_reg when ADDI_OP | ANDI_OP | ORI_OP,
-                 c_reg   when others;
+    alu_c <= c_reg when ctrl_alu_c = '0' else
+             imm_reg;
 
     mdr_out <= b_reg;
 
