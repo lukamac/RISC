@@ -70,9 +70,10 @@ begin
 			if(rst = '1') then
 				pc_out_reg <= (others => '0');
 			else
-				pc_out_reg <= pc_add_4;
+				pc_out_reg <= pc_reg;
 			end if;
 		end if;
 	end process pc_out_reg_proc;
+	pc_out <= pc_out_reg;
 
 end rtl;
