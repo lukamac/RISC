@@ -16,7 +16,7 @@ entity OF_stage is
         pc_in       : in address_t;
         pc_out      : out address_t;
 
-        b, c        : out word_t;
+        b, c        : out word_t
     );
 end entity OF_stage;
 

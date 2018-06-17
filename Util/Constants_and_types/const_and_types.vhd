@@ -16,7 +16,7 @@ package RISC_const_and_types is
     subtype op_t is std_logic_vector(OP_SIZE - 1 downto 0);
 
     constant IMMEDIATE_SIZE : integer := 17;
-    subtype immedate_t is std_logic_vector(IMMEDIATE_SIZE - 1 downto 0);
+    subtype immediate_t is std_logic_vector(IMMEDIATE_SIZE - 1 downto 0);
 
     constant SHIFT_AMOUNT_SIZE : integer := 5;
     subtype s_amount_t is std_logic_vector(SHIFT_AMOUNT_SIZE - 1 downto 0);
