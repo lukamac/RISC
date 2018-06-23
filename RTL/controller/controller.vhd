@@ -11,6 +11,15 @@ entity controller is
     (
         rst, clk : in std_logic;
         instr : in word_t;
+        
+        -- IF stage control signals
+        pc_in_mux : out std_logic; -- PC input selection mux control signal
+        
+        -- OF stage control signals
+        reg_a_we : out std_logic; -- register a write enable signal
+        reg_a_adr : out reg_address_t; -- register a address
+        reg_b_adr : out reg_address_t; -- register b address
+        reg_c_adr : out reg_address_t; -- register c address
 
         -- EX stage control signals
         alu_b, alu_c : out std_logic;
@@ -51,6 +60,21 @@ begin
 
     past_instr_next(3 downto 1) <= past_instr_reg(2 downto 0);
     past_instr_next(0) <= instr;
+    
+    
+    OF_st: process(past_instr_reg(OF_stage)) is
+        variable OF_instr : word_t := past_instr_reg(OF_stage);
+        variable op : op_t := OF_instr(31 downto 27);
+        variable b_adr : reg_address_t := OF_instr(31 downto 27);
+        variable c_adr : reg_address_t := OF_instr(31 downto 27);
+    begin
+        case op is
+                -- TODO
+            when others =>
+                null;
+        end case;
+    end process OF_st;
+
 
     EX: process (past_instr_reg(EX_stage)) is
         variable EX_instr : word_t := past_instr_reg(EX_stage);
@@ -87,6 +111,7 @@ begin
     WB: process (past_instr_reg(WE_stage)) is
         variable WB_instr : word_t := past_instr_reg(WE_stage);
         variable op : op_t := WB_instr(31 downto 27);
+        variable a_addr : reg_address_t := WB_instr(31 downto 27);
     begin
         wb_mux <= '0';
         case op is

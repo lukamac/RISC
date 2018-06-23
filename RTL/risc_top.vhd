@@ -129,6 +129,35 @@ architecture rtl of risc_top is
 
 begin
 
+    if_inst: IF_stage port map(
+            clk => clk,
+            rst => rst
+            
+            );
+            
+    of_inst: OF_stage port map(
+            clk => clk,
+            rst => rst
+            
+            );
+            
+    ex_inst: EX_stage port map(
+            clk => clk,
+            rst => rst
+            
+            );
+            
+    me_inst: ME_stage port map(
+            clk => clk,
+            rst => rst
+            
+            );
+            
+    we_inst: WE_stage port map(
+            clk => clk,
+            rst => rst
+            
+            );
 
 end rtl;
 
