@@ -69,11 +69,8 @@ begin
         variable b_adr    : reg_address_t := OF_instr(21 downto 17);
         variable c_adr    : reg_address_t := OF_instr(16 downto 12);
     begin
-        case op is
-                -- TODO
-            when others =>
-                null;
-        end case;
+        reg_b_adr <= b_adr;
+        reg_c_adr <= c_adr;
     end process OF_st;
 
 

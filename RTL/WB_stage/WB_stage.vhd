@@ -5,7 +5,7 @@ library work;
 use work.RISC_const_and_types.all;
 
 
-entity WE_stage is
+entity WB_stage is
     port
     (
         rst, clk   : in std_logic;
@@ -17,10 +17,10 @@ entity WE_stage is
 
         data_out   : out word_t
     );
-end entity WE_stage;
+end entity WB_stage;
 
 
-architecture RTL of WE_stage is
+architecture RTL of WB_stage is
     signal mdr_in_reg  , mdr_in_next  : word_t;
     signal alu_res_reg , alu_res_next : word_t;
 begin
