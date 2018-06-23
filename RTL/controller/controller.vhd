@@ -16,8 +16,6 @@ entity controller is
         pc_in_mux : out std_logic; -- PC input selection mux control signal
         
         -- OF stage control signals
-        reg_a_we : out std_logic; -- register a write enable signal
-        reg_a_adr : out reg_address_t; -- register a address
         reg_b_adr : out reg_address_t; -- register b address
         reg_c_adr : out reg_address_t; -- register c address
 
@@ -30,7 +28,9 @@ entity controller is
         mem_en, rw            : out std_logic;
 
         -- WB stage control signals
-        wb_mux : out std_logic
+        reg_a_we  : out std_logic; -- register a write enable signal
+        reg_a_adr : out reg_address_t; -- register a address
+        wb_mux    : out std_logic
     );
 end entity controller;
 
@@ -64,10 +64,10 @@ begin
     
     
     OF_st: process(past_instr_reg(OF_stage)) is
-        variable OF_instr : word_t := past_instr_reg(OF_stage);
-        variable op : op_t := OF_instr(31 downto 27);
-        variable b_adr : reg_address_t := OF_instr(31 downto 27);
-        variable c_adr : reg_address_t := OF_instr(31 downto 27);
+        variable OF_instr : word_t        := past_instr_reg(OF_stage);
+        variable op       : op_t          := OF_instr(31 downto 27);
+        variable b_adr    : reg_address_t := OF_instr(21 downto 17);
+        variable c_adr    : reg_address_t := OF_instr(16 downto 12);
     begin
         case op is
                 -- TODO
@@ -112,11 +112,21 @@ begin
     WB: process (past_instr_reg(WE_stage)) is
         variable WB_instr : word_t := past_instr_reg(WE_stage);
         variable op : op_t := WB_instr(31 downto 27);
-        variable a_addr : reg_address_t := WB_instr(31 downto 27);
+        variable a_addr : reg_address_t := WB_instr(26 downto 22);
     begin
-        wb_mux <= '0';
+        wb_mux    <= '0';
+        reg_a_we  <= '0';
+        reg_a_adr <= a_addr;
         case op is
             --TODO when we add memory commands
+            when ADDI_OP  | SUBI_OP | ORI_OP   | ANDI_OP |
+                 SHRI_OP  | SHLI_OP | SHRAI_OP | SHCI_OP |
+                 ADD_OP   | SUB_OP  | OR_OP    | AND_OP  |
+                 SHR_OP   | SHL_OP  | SHRA_OP  | SHC_OP  |
+                 NEG_OP   | NOT_OP  =>
+                     reg_a_we <= '1';
+            when NOP_OP =>
+                reg_a_we <= '0';
             when others =>
                 null;
         end case;
