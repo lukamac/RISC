@@ -58,7 +58,7 @@ begin
 	-- PC input mux
 	with ctrl_pc_in_mux select
 		pc_next <=  pc_add_4 when '0',
-						pc_alu_res_in when others;
+					pc_alu_res_in when others;
 	
 	-- Instruction address output
 	instr_addr <= pc_reg;

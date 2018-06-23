@@ -5,22 +5,22 @@ library work;
 use work.RISC_const_and_types.all;
 
 
-entity WE_stage is
+entity WB_stage is
     port
     (
         rst, clk   : in std_logic;
 
-        ctrl_we    : in std_logic;
+        ctrl_wb_mux: in std_logic;
 
         alu_res_in : in word_t;
         mdr_in     : in word_t;
 
         data_out   : out word_t
     );
-end entity WE_stage;
+end entity WB_stage;
 
 
-architecture RTL of WE_stage is
+architecture RTL of WB_stage is
     signal mdr_in_reg  , mdr_in_next  : word_t;
     signal alu_res_reg , alu_res_next : word_t;
 begin
@@ -40,6 +40,6 @@ begin
     mdr_in_next  <= mdr_in;
     alu_res_next <= alu_res_in;
 
-    data_out <= alu_res_reg when ctrl_we = '0' else
+    data_out <= alu_res_reg when ctrl_wb_mux = '0' else
                 mdr_in_reg;
 end architecture RTL;

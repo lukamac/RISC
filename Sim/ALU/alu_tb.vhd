@@ -65,7 +65,7 @@ begin
 
         b <= X"FF000004";
         c <= X"00000004";
-        op <= SH_OP;
+        op <= SHR_OP;
         wait for wait_t;
 
         op <= SHRA_OP;

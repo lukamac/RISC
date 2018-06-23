@@ -10,26 +10,28 @@ entity controller is
     port
     (
         rst, clk : in std_logic;
-        instr : in word_t;
-        
+        instr    : in word_t;
+
         -- IF stage control signals
         pc_in_mux : out std_logic; -- PC input selection mux control signal
         
         -- OF stage control signals
-        reg_a_we : out std_logic; -- register a write enable signal
-        reg_a_adr : out reg_address_t; -- register a address
-        reg_b_adr : out reg_address_t; -- register b address
-        reg_c_adr : out reg_address_t; -- register c address
+        imm_out     : out immediate_t; -- immediate constant from instruction
+        reg_b_adr   : out reg_address_t; -- register b address
+        reg_c_adr   : out reg_address_t; -- register c address
 
         -- EX stage control signals
-        alu_b, alu_c : out std_logic;
-        alu_op : out op_t;
+        alu_b_mux, alu_c_mux : out std_logic;
+        alu_op       : out op_t;
 
         -- MEM stage control signals
-        mem_en, rw : out std_logic;
+        wait_data, wait_instr : in std_logic;
+        mem_en, rw            : out std_logic;
 
         -- WB stage control signals
-        wb_mux : out std_logic
+        reg_a_we  : out std_logic; -- register a write enable signal
+        reg_a_adr : out reg_address_t; -- register a address
+        wb_mux    : out std_logic
     );
 end entity controller;
 
@@ -41,7 +43,7 @@ architecture RTL of controller is
 
     constant OF_stage : natural := 0;
     constant EX_stage : natural := 1;
-    constant ME_stage : natural := 2;
+    constant MEM_stage : natural := 2;
     constant WE_stage : natural := 3;
 
 begin
@@ -63,18 +65,17 @@ begin
     
     
     OF_st: process(past_instr_reg(OF_stage)) is
-        variable OF_instr : word_t := past_instr_reg(OF_stage);
-        variable op : op_t := OF_instr(31 downto 27);
-        variable b_adr : reg_address_t := OF_instr(31 downto 27);
-        variable c_adr : reg_address_t := OF_instr(31 downto 27);
+        variable OF_instr : word_t        := past_instr_reg(OF_stage);
+        variable op       : op_t          := OF_instr(31 downto 27);
+        variable b_adr    : reg_address_t := OF_instr(21 downto 17);
+        variable c_adr    : reg_address_t := OF_instr(16 downto 12);
+        variable imm      : immediate_t   := OF_instr(16 downto 0);
     begin
-        case op is
-                -- TODO
-            when others =>
-                null;
-        end case;
+        reg_b_adr <= b_adr;
+        reg_c_adr <= c_adr;
+        imm_out <= imm;
     end process OF_st;
-
+    
 
     EX: process (past_instr_reg(EX_stage)) is
         variable EX_instr : word_t := past_instr_reg(EX_stage);
@@ -82,20 +83,21 @@ begin
     begin
         alu_op <= op;
 
-        alu_b <= '0';
-        alu_c <= '0';
+        alu_b_mux <= '0';
+        alu_c_mux <= '0';
         case op is
+            --TODO memory commands
             when ADDI_OP | SUBI_OP | ORI_OP   | ANDI_OP |
-                 SHRI_OP  | SHLI_OP | SHRAI_OP | SHCI_OP =>
-                alu_c <= '1';
+                 SHRI_OP | SHLI_OP | SHRAI_OP | SHCI_OP =>
+                alu_c_mux <= '1';
             when others =>
                 null;
         end case;
     end process EX;
 
 
-    MEM: process (past_instr_reg(ME_stage)) is
-        variable MEM_instr : word_t := past_instr_reg(ME_stage);
+    MEM: process (past_instr_reg(MEM_stage)) is
+        variable MEM_instr : word_t := past_instr_reg(MEM_stage);
         variable op : op_t := MEM_instr(31 downto 27);
     begin
         mem_en <= '0';
@@ -111,11 +113,21 @@ begin
     WB: process (past_instr_reg(WE_stage)) is
         variable WB_instr : word_t := past_instr_reg(WE_stage);
         variable op : op_t := WB_instr(31 downto 27);
-        variable a_addr : reg_address_t := WB_instr(31 downto 27);
+        variable a_addr : reg_address_t := WB_instr(26 downto 22);
     begin
-        wb_mux <= '0';
+        wb_mux    <= '0';
+        reg_a_we  <= '0';
+        reg_a_adr <= a_addr;
         case op is
             --TODO when we add memory commands
+            when ADDI_OP | SUBI_OP | ORI_OP   | ANDI_OP |
+                 SHRI_OP | SHLI_OP | SHRAI_OP | SHCI_OP |
+                 ADD_OP  | SUB_OP  | OR_OP    | AND_OP  |
+                 SHR_OP  | SHL_OP  | SHRA_OP  | SHC_OP  |
+                 NEG_OP  | NOT_OP  =>
+                     reg_a_we <= '1';
+            when NOP_OP =>
+                reg_a_we <= '0';
             when others =>
                 null;
         end case;

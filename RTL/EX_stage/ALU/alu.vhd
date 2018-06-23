@@ -53,22 +53,24 @@ begin
     choose_result: process (op, b, adder_res, neg_c, not_c, b_and_c, b_or_c, rts_res, ls_res) is
     begin
         case (op) is
+            when ADD_OP | ADDI_OP |
+                 SUB_OP | SUBI_OP =>
+                a <= std_logic_vector(adder_res);
             when NEG_OP =>
                 a <= neg_c;
             when NOT_OP =>
                 a <= not_c;
-            when AND_OP =>
-                a <= b_and_c;
-            when ANDI_OP =>
+            when AND_OP | ANDI_OP =>
                 a <= b_and_c;
             when OR_OP | ORI_OP =>
                 a <= b_or_c;
-            when SH_OP | SHRA_OP | SHC_OP =>
+            when SHR_OP  | SHRA_OP  | SHC_OP |
+                 SHRI_OP | SHRAI_OP | SHCI_OP =>
                 a <= rts_res;
-            when SHL_OP =>
+            when SHL_OP | SHLI_OP =>
                 a <= ls_res;
             when others =>
-                a <= std_logic_vector(adder_res);
+                a <= c;
         end case;
     end process choose_result;
 
@@ -97,7 +99,7 @@ begin
 
     -- Adder
     adder_b <= signed(b);
-    adder_c <= signed(neg_c) when op = SUB_OP else
+    adder_c <= signed(neg_c) when op = SUB_OP or op = SUBI_OP else
                signed(c);
 
     adder_res <= adder_b + adder_c;
