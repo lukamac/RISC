@@ -44,7 +44,7 @@ architecture RTL of controller is
     constant OF_stage : natural := 0;
     constant EX_stage : natural := 1;
     constant MEM_stage : natural := 2;
-    constant WE_stage : natural := 3;
+    constant WB_stage : natural := 3;
 
 begin
 
@@ -53,7 +53,7 @@ begin
     begin
         if (rising_edge(clk)) then
             if (rst = '1') then
-                past_instr_reg <= (others => init_word);
+                past_instr_reg <= (others => (others => '0'));
             else
                 past_instr_reg <= past_instr_next;
             end if;
@@ -65,11 +65,11 @@ begin
     
     
     OF_st: process(past_instr_reg(OF_stage)) is
-        variable OF_instr : word_t        := past_instr_reg(OF_stage);
-        variable op       : op_t          := OF_instr(31 downto 27);
-        variable b_adr    : reg_address_t := OF_instr(21 downto 17);
-        variable c_adr    : reg_address_t := OF_instr(16 downto 12);
-        variable imm      : immediate_t   := OF_instr(16 downto 0);
+        alias OF_instr : word_t is past_instr_reg(OF_stage);
+        alias op       : op_t          is OF_instr(31 downto 27);
+        alias b_adr    : reg_address_t is OF_instr(21 downto 17);
+        alias c_adr    : reg_address_t is OF_instr(16 downto 12);
+        alias imm      : immediate_t   is OF_instr(16 downto 0);
     begin
         reg_b_adr <= b_adr;
         reg_c_adr <= c_adr;
@@ -78,8 +78,8 @@ begin
     
 
     EX: process (past_instr_reg(EX_stage)) is
-        variable EX_instr : word_t := past_instr_reg(EX_stage);
-        variable op : op_t := EX_instr(31 downto 27);
+        alias EX_instr : word_t is past_instr_reg(EX_stage);
+        alias op : op_t is EX_instr(31 downto 27);
     begin
         alu_op <= op;
 
@@ -97,8 +97,8 @@ begin
 
 
     MEM: process (past_instr_reg(MEM_stage)) is
-        variable MEM_instr : word_t := past_instr_reg(MEM_stage);
-        variable op : op_t := MEM_instr(31 downto 27);
+        alias MEM_instr : word_t is past_instr_reg(MEM_stage);
+        alias op : op_t is MEM_instr(31 downto 27);
     begin
         mem_en <= '0';
         rw <= '0';
@@ -110,10 +110,10 @@ begin
     end process MEM;
 
 
-    WB: process (past_instr_reg(WE_stage)) is
-        variable WB_instr : word_t := past_instr_reg(WE_stage);
-        variable op : op_t := WB_instr(31 downto 27);
-        variable a_addr : reg_address_t := WB_instr(26 downto 22);
+    WB: process (past_instr_reg(WB_stage)) is
+        alias WB_instr : word_t is past_instr_reg(WB_stage);
+        alias op : op_t is WB_instr(31 downto 27);
+        alias a_addr : reg_address_t is WB_instr(26 downto 22);
     begin
         wb_mux    <= '0';
         reg_a_we  <= '0';

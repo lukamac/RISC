@@ -180,7 +180,6 @@ architecture rtl of risc_top is
     
     -- Signals coming out of WB stage
     signal wb_mdr_in : word_t;
-    
 
 begin
 
@@ -264,6 +263,5 @@ begin
             reg_a_we => ctrl_reg_a_we,
             reg_a_adr => ctrl_a_adr,
             wb_mux => ctrl_wb_mux
-            );
-        
+            );   
 end rtl;
