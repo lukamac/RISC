@@ -16,8 +16,9 @@ entity controller is
         pc_in_mux : out std_logic; -- PC input selection mux control signal
         
         -- OF stage control signals
-        reg_b_adr : out reg_address_t; -- register b address
-        reg_c_adr : out reg_address_t; -- register c address
+        imm_out     : out immediate_t; -- immediate constant from instruction
+        reg_b_adr   : out reg_address_t; -- register b address
+        reg_c_adr   : out reg_address_t; -- register c address
 
         -- EX stage control signals
         alu_b, alu_c : out std_logic;
@@ -68,11 +69,13 @@ begin
         variable op       : op_t          := OF_instr(31 downto 27);
         variable b_adr    : reg_address_t := OF_instr(21 downto 17);
         variable c_adr    : reg_address_t := OF_instr(16 downto 12);
+        variable imm      : immediate_t   := OF_instr(16 downto 0);
     begin
         reg_b_adr <= b_adr;
         reg_c_adr <= c_adr;
+        imm_out <= imm;
     end process OF_st;
-
+    
 
     EX: process (past_instr_reg(EX_stage)) is
         variable EX_instr : word_t := past_instr_reg(EX_stage);
