@@ -1,2 +1,3 @@
 # Vim gitignore
 *.swp
+.DS_store
