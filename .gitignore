@@ -1,3 +1,6 @@
 # Vim gitignore
 *.swp
 .DS_store
+.lvimrc
+tags
+build/
