@@ -10,7 +10,7 @@ entity WB_stage is
     (
         rst, clk   : in std_logic;
 
-        ctrl_we    : in std_logic;
+        ctrl_wb_mux: in std_logic;
 
         alu_res_in : in word_t;
         mdr_in     : in word_t;
@@ -40,6 +40,6 @@ begin
     mdr_in_next  <= mdr_in;
     alu_res_next <= alu_res_in;
 
-    data_out <= alu_res_reg when ctrl_we = '0' else
+    data_out <= alu_res_reg when ctrl_wb_mux = '0' else
                 mdr_in_reg;
 end architecture RTL;

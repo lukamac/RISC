@@ -18,8 +18,8 @@ entity risc_top is
             data_addr   : out address_t;
             data_out    : out word_t;
             data_in     : in word_t;
+            data_en     : out std_logic;
             rw          : out std_logic;
-            we          : out std_logic;
             wait_data   : in std_logic
     );
 
@@ -117,7 +117,7 @@ architecture rtl of risc_top is
         port (
             rst, clk   : in std_logic;
 
-            ctrl_we    : in std_logic;
+            ctrl_wb_mux: in std_logic;
 
             alu_res_in : in word_t;
             mdr_in     : in word_t;
@@ -140,7 +140,7 @@ architecture rtl of risc_top is
             reg_c_adr   : out reg_address_t; -- register c address
 
             -- EX stage control signals
-            alu_b, alu_c : out std_logic;
+            alu_b_mux, alu_c_mux : out std_logic;
             alu_op       : out op_t;
 
             -- MEM stage control signals
@@ -154,16 +154,33 @@ architecture rtl of risc_top is
         );
     end component controller;
     
-    signal mem_alu_res : word_t := (others => '0');
-    signal ctrl_pc_in_mux : std_logic := '0';
-    signal if_pc_out, of_pc_out : address_t := (others => '0');
-    signal if_ir_out : word_t := (others => '0');
-    signal ctrl_imm : immediate_t := (others => '0');
-    signal of_imm_out : immediate_t := (others => '0');
-    signal of_a_in, of_b_out, of_c_out : word_t := (others => '0');
-    signal ctrl_reg_a_we : std_logic := (others => '0');
-    signal ctrl_a_adr, ctrl_b_adr, ctrl_c_adr : reg_address_t := (others => '0');
-    signal ctrl_alu_op : op_t := (others => '0');
+    -- Signals coming out of controller
+    signal ctrl_pc_in_mux : std_logic;
+    signal ctrl_reg_a_we : std_logic;
+    signal ctrl_17imm : immediate_t;
+    signal ctrl_a_adr, ctrl_b_adr, ctrl_c_adr : reg_address_t;
+    signal ctrl_alu_op : op_t;
+    signal ctrl_alu_b_mux, ctrl_alu_c_mux : std_logic;
+    signal ctrl_wb_mux : std_logic;
+    
+    -- Signals coming out of IF stage
+    signal if_ir_out : word_t;
+    signal if_pc_out : address_t;
+    
+    -- Signals coming out of OF stage
+    signal of_pc_out : address_t;
+    signal of_32imm_out : word_t;
+    signal of_a_in, of_b_out, of_c_out : word_t;
+    
+    -- Signals coming out of EX stage
+    signal ex_alu_res, ex_mdr_out : word_t;
+    
+    -- Signals coming out of MEM stage
+    signal mem_alu_res : word_t;
+    
+    -- Signals coming out of WB stage
+    signal wb_mdr_in : word_t;
+    
 
 begin
 
@@ -181,8 +198,8 @@ begin
     of_inst: OF_stage port map(
             clk => clk,
             rst => rst,
-            ctrl_imm => ctrl_imm,
-            imm_out => of_imm_out,
+            ctrl_imm => ctrl_17imm,
+            imm_out => of_32imm_out,
             pc_in => if_pc_out,
             pc_out => of_pc_out,
             a => of_a_in,
@@ -198,35 +215,55 @@ begin
             clk => clk,
             rst => rst,
             ctrl_op => ctrl_alu_op,
-            b => ,
-            pc => ,
-            ctrl_alu_b => ,
-            c => ,
-            imm => ,
-            ctrl_alu_c => ,
-            alu_res => ,
-            mdr_out => 
+            b => of_b_out,
+            pc => of_pc_out,
+            ctrl_alu_b => ctrl_alu_b_mux,
+            c => of_c_out,
+            imm => of_32imm_out,
+            ctrl_alu_c => ctrl_alu_c_mux,
+            alu_res => ex_alu_res,
+            mdr_out => ex_mdr_out
             );
             
     mem_inst: MEM_stage port map(
             clk => clk,
             rst => rst,
-            alu_res_in => ,
-            mdr_out => , 
-            data_in => ,
-            mem_addr => ,
-            alu_res_out => ,
-            data_out => ,
-            mdr_in => 
+            alu_res_in => ex_alu_res,
+            mdr_out => ex_mdr_out, 
+            data_in => data_in,
+            mem_addr => data_addr,
+            alu_res_out => mem_alu_res,
+            data_out => data_out,
+            mdr_in => wb_mdr_in
             );
             
     wb_inst: WB_stage port map(
             clk => clk,
             rst => rst,
-            ctrl_we => ,
-            alu_res_in => ,
-            mdr_in => ,
-            data_out => 
+            ctrl_wb_mux => ctrl_wb_mux,
+            alu_res_in => mem_alu_res,
+            mdr_in => wb_mdr_in,
+            data_out => of_a_in
             );
-
+            
+    ctrl_inst: controller port map(
+            rst => rst,
+            clk => clk,
+            instr => if_ir_out,
+            pc_in_mux => ctrl_pc_in_mux,
+            imm_out => ctrl_17imm,
+            reg_b_adr => ctrl_b_adr,
+            reg_c_adr => ctrl_c_adr,
+            alu_b_mux => ctrl_alu_b_mux, 
+            alu_c_mux => ctrl_alu_c_mux,
+            alu_op => ctrl_alu_op,
+            wait_data => wait_data,
+            wait_instr => wait_instr,
+            mem_en => data_en,
+            rw => rw,
+            reg_a_we => ctrl_reg_a_we,
+            reg_a_adr => ctrl_a_adr,
+            wb_mux => ctrl_wb_mux
+            );
+        
 end rtl;
