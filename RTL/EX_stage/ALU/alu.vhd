@@ -99,7 +99,7 @@ begin
 
     -- Adder
     adder_b <= signed(b);
-    adder_c <= signed(neg_c) when op = SUB_OP else
+    adder_c <= signed(neg_c) when op = SUB_OP or op = SUBI_OP else
                signed(c);
 
     adder_res <= adder_b + adder_c;
