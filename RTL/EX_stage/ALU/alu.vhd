@@ -76,13 +76,13 @@ begin
     -- Shifters
     s_amt <= c(s_amount_t'range);
 
-    rts : component right_tri_shifter port map(op => op,
-                                               a => b,
+    rts : component right_tri_shifter port map(op  => op,
+                                               a   => b,
                                                amt => s_amt,
                                                res => rts_res
                                               );
 
-    ls  : component left_shifter      port map(a => b,
+    ls  : component left_shifter      port map(a   => b,
                                                amt => s_amt,
                                                res => ls_res
                                               );
