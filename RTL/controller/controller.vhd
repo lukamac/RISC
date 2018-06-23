@@ -42,7 +42,7 @@ architecture RTL of controller is
 
     constant OF_stage : natural := 0;
     constant EX_stage : natural := 1;
-    constant ME_stage : natural := 2;
+    constant MEM_stage : natural := 2;
     constant WE_stage : natural := 3;
 
 begin
@@ -86,8 +86,9 @@ begin
         alu_b <= '0';
         alu_c <= '0';
         case op is
+            --TODO memory commands
             when ADDI_OP | SUBI_OP | ORI_OP   | ANDI_OP |
-                 SHRI_OP  | SHLI_OP | SHRAI_OP | SHCI_OP =>
+                 SHRI_OP | SHLI_OP | SHRAI_OP | SHCI_OP =>
                 alu_c <= '1';
             when others =>
                 null;
@@ -95,8 +96,8 @@ begin
     end process EX;
 
 
-    MEM: process (past_instr_reg(ME_stage)) is
-        variable MEM_instr : word_t := past_instr_reg(ME_stage);
+    MEM: process (past_instr_reg(MEM_stage)) is
+        variable MEM_instr : word_t := past_instr_reg(MEM_stage);
         variable op : op_t := MEM_instr(31 downto 27);
     begin
         mem_en <= '0';
@@ -119,11 +120,11 @@ begin
         reg_a_adr <= a_addr;
         case op is
             --TODO when we add memory commands
-            when ADDI_OP  | SUBI_OP | ORI_OP   | ANDI_OP |
-                 SHRI_OP  | SHLI_OP | SHRAI_OP | SHCI_OP |
-                 ADD_OP   | SUB_OP  | OR_OP    | AND_OP  |
-                 SHR_OP   | SHL_OP  | SHRA_OP  | SHC_OP  |
-                 NEG_OP   | NOT_OP  =>
+            when ADDI_OP | SUBI_OP | ORI_OP   | ANDI_OP |
+                 SHRI_OP | SHLI_OP | SHRAI_OP | SHCI_OP |
+                 ADD_OP  | SUB_OP  | OR_OP    | AND_OP  |
+                 SHR_OP  | SHL_OP  | SHRA_OP  | SHC_OP  |
+                 NEG_OP  | NOT_OP  =>
                      reg_a_we <= '1';
             when NOP_OP =>
                 reg_a_we <= '0';
