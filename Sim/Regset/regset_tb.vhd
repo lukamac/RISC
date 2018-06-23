@@ -7,6 +7,9 @@ use ieee.std_logic_1164.all;
  
 entity regset_tb is
 end regset_tb;
+
+library work;
+use work.RISC_const_and_types.all;
  
 architecture behavior of regset_tb is 
  
@@ -14,28 +17,28 @@ architecture behavior of regset_tb is
  
     component regset
     port(
-         clk : in  std_logic;
-         we  : in  std_logic;
-         a   : in  std_logic_vector(4 downto 0);
-         b   : in  std_logic_vector(4 downto 0);
-         c   : in  std_logic_vector(4 downto 0);
-         dic : in  std_logic_vector(31 downto 0);
-         doa : out  std_logic_vector(31 downto 0);
-         dob : out  std_logic_vector(31 downto 0)
+            clk : in std_logic; -- Clock
+            we  : in std_logic; -- Write enable for input port C
+			a   : in reg_address_t; -- Address for output port A
+			b   : in reg_address_t; -- Address for output port B
+			c   : in reg_address_t; -- Address for input port C
+			dob : out word_t; -- Data output for port B
+			doc : out word_t; -- Data output for port C
+			dia : in word_t -- Data input for port A
         );
     end component;
     
    --Inputs
    signal clk : std_logic := '0';
    signal we : std_logic := '0';
-   signal a : std_logic_vector(4 downto 0) := (others => '0');
-   signal b : std_logic_vector(4 downto 0) := (others => '0');
-   signal c : std_logic_vector(4 downto 0) := (others => '0');
-   signal dic : std_logic_vector(31 downto 0) := (others => '0');
+   signal a : reg_address_t := (others => '0');
+   signal b : reg_address_t := (others => '0');
+   signal c : reg_address_t := (others => '0');
+   signal dia : word_t := (others => '0');
 
  	--Outputs
-   signal doa : std_logic_vector(31 downto 0);
-   signal dob : std_logic_vector(31 downto 0);
+   signal dob : word_t;
+   signal doc : word_t;
 
    -- Clock period definitions
    constant clk_period : time := 10 ns;
@@ -49,9 +52,9 @@ begin
           a => a,
           b => b,
           c => c,
-          dic => dic,
-          doa => doa,
-          dob => dob
+          dob => dob,
+          doc => doc,
+          dia => dia
         );
 
    -- Clock process definitions
@@ -64,16 +67,16 @@ begin
 		a <= "00111"; -- register r7
 		b <= "01000"; -- register r8
 		c <= "01001"; -- register r9
-		dic <= X"1234ABCD"; -- data to be written to register c
+		dia <= X"1234ABCD"; -- data to be written to register a
 		we <= '1'; -- write enable
 		
 		wait for clk_period;
 		
 		we <= '0'; -- write enable
 		a <= "01001"; -- register r9
-		b <= "01000"; -- register r8
+		b <= "00111"; -- register r7
 		c <= "01000"; -- register r8
-		dic <= X"DEF12345"; -- data to be written to register c
+		dia <= X"DEF12345"; -- data to be written to register a
 		
 		wait for clk_period;
 		
@@ -88,7 +91,7 @@ begin
 		we <= '1';
 		a <= "01001"; -- register r9
 		c <= "01001"; -- register r9
-		dic <= X"00120034"; -- data to be written to register c
+		dia <= X"00120034"; -- data to be written to register a
 		
 		wait for clk_period;
 		

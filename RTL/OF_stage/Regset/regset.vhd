@@ -12,14 +12,14 @@ entity regset is
 			a   : in reg_address_t; -- Address for output port A
 			b   : in reg_address_t; -- Address for output port B
 			c   : in reg_address_t; -- Address for input port C
-			doa  : out word_t; -- Data output for port A
-			dob  : out word_t; -- Data output for port B
-			dic  : in word_t -- Data input for port C
+			dob : out word_t; -- Data output for port B
+			doc : out word_t; -- Data output for port C
+			dia : in word_t -- Data input for port A
 		);
 end regset;
 
 architecture rtl of regset is
-    type ram_type is array (31 downto 0) of std_logic_vector (31 downto 0);
+    type ram_type is array (31 downto 0) of word_t;
     signal RAM : ram_type;
 begin
 	
@@ -28,13 +28,13 @@ begin
     begin
         if (rising_edge(clk)) then
             if (we = '1') then
-                RAM(to_integer(unsigned(c))) <= dic;
+                RAM(to_integer(unsigned(a))) <= dia;
             end if;
         end if;
     end process;
 	 
 	 -- Data outputs
-    doa <= RAM(to_integer(unsigned(a)));
     dob <= RAM(to_integer(unsigned(b)));
+    doc <= RAM(to_integer(unsigned(c)));
 
 end rtl;
