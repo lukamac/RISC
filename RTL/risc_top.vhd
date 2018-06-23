@@ -113,7 +113,7 @@ architecture rtl of risc_top is
         );
     end component ME_stage;
     
-    component WE_stage is
+    component WB_stage is
         port (
             rst, clk   : in std_logic;
 
@@ -124,15 +124,24 @@ architecture rtl of risc_top is
 
             data_out   : out word_t
         );
-    end component WE_stage;
-
+    end component WB_stage;
+    
+    signal alu_res : word_t := (others => '0');
+    signal ctrl_pc_in_mux : std_logic := '0';
+    signal if_pc_out : address_t := (others => '0');
+    signal if_ir_out : word_t := (others => '0');
 
 begin
 
     if_inst: IF_stage port map(
             clk => clk,
-            rst => rst
-            
+            rst => rst,
+            instr_addr => instr_addr,
+            instr_data => instr_data,
+            pc_alu_res_in => alu_res,
+            ctrl_pc_in_mux => ctrl_pc_in_mux,
+            pc_out => if_pc_out,
+            ir_out => if_ir_out
             );
             
     of_inst: OF_stage port map(
@@ -153,11 +162,10 @@ begin
             
             );
             
-    we_inst: WE_stage port map(
+    wb_inst: WB_stage port map(
             clk => clk,
             rst => rst
             
             );
 
 end rtl;
-
