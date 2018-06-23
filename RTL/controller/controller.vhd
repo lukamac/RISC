@@ -10,14 +10,15 @@ entity controller is
     port
     (
         rst, clk : in std_logic;
-        instr : in word_t;
+        instr    : in word_t;
 
         -- EX stage control signals
         alu_b, alu_c : out std_logic;
-        alu_op : out op_t;
+        alu_op       : out op_t;
 
         -- MEM stage control signals
-        mem_en, rw : out std_logic;
+        wait_data, wait_instr : in std_logic;
+        mem_en, rw            : out std_logic;
 
         -- WB stage control signals
         wb_mux : out std_logic
