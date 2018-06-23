@@ -20,7 +20,7 @@ entity controller is
         reg_c_adr : out reg_address_t; -- register c address
 
         -- EX stage control signals
-        alu_b, alu_c : out std_logic;
+        alu_b_mux, alu_c_mux : out std_logic;
         alu_op       : out op_t;
 
         -- MEM stage control signals
@@ -80,13 +80,13 @@ begin
     begin
         alu_op <= op;
 
-        alu_b <= '0';
-        alu_c <= '0';
+        alu_b_mux <= '0';
+        alu_c_mux <= '0';
         case op is
             --TODO memory commands
             when ADDI_OP | SUBI_OP | ORI_OP   | ANDI_OP |
                  SHRI_OP | SHLI_OP | SHRAI_OP | SHCI_OP =>
-                alu_c <= '1';
+                alu_c_mux <= '1';
             when others =>
                 null;
         end case;
