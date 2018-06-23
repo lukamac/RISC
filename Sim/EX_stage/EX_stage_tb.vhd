@@ -34,7 +34,7 @@ architecture beh of EX_stage_tb is
     signal ctrl_alu_b, ctrl_alu_c : std_logic;
 
     constant t_clk  : time := 10  ns;
-    constant t_wait : time := 100 ns;
+    constant t_wait : time := 200 ns;
 
 begin
 
