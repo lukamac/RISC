@@ -19,19 +19,24 @@ architecture beh of EX_stage_tb is
         (
             clk, rst        : in std_logic;
             ctrl_op         : in op_t;
-            b, pc           : in word_t;
+            b				: in word_t;
+			pc_in        	: in address_t;
             ctrl_alu_b      : in std_logic;
             c, imm          : in word_t;
             ctrl_alu_c      : in std_logic;
 
+			status			: out status_t;
+			pc_out			: out address_t;
             alu_res, mdr_out    : out word_t
         );
     end component EX_stage;
 
     signal clk, rst : std_logic;
     signal ctrl_op : op_t;
-    signal imm, b, c, pc, alu_res, mdr_out : word_t;
+    signal imm, b, c, alu_res, mdr_out : word_t;
+	signal pc_in, pc_out : address_t;
     signal ctrl_alu_b, ctrl_alu_c : std_logic;
+    signal status : status_t;
 
     constant t_clk  : time := 5  ns;
     constant t_wait : time := 20 ns;
@@ -44,8 +49,10 @@ begin
                                        imm        => imm,
                                        b          => b,
                                        c          => c,
-                                       pc         => pc,
+                                       pc_in      => pc_in,
+                                       pc_out     => pc_out,
                                        alu_res    => alu_res,
+                                       status     => status,
                                        ctrl_alu_b => ctrl_alu_b,
                                        ctrl_alu_c => ctrl_alu_c,
                                        mdr_out    => mdr_out
@@ -64,7 +71,7 @@ begin
         rst <= '0';
         
         ctrl_alu_b <= '0';
-        pc <= (others => '0');
+        pc_in <= (others => '0');
 
         imm <= X"00000002";
         b   <= X"00000004";
