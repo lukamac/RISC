@@ -17,7 +17,7 @@ entity EX_stage is
         ctrl_op     : in op_t;
 
         -- ALU input B signals
-        b           : in word_t;
+        b_in        : in word_t;
         pc_in       : in address_t;
         ctrl_alu_b  : in std_logic;
 
@@ -27,6 +27,7 @@ entity EX_stage is
 
         status           : out status_t;
         pc_out           : out address_t;
+        b_out            : out word_t;
         alu_res, mdr_out : out word_t
     );
 end entity EX_stage;
@@ -63,7 +64,7 @@ begin
             else
                 ctrl_op_reg <= ctrl_op;
                 imm_reg     <= imm;
-                b_reg       <= b;
+                b_reg       <= b_in;
                 c_reg       <= c;
                 pc_reg      <= pc_in;
             end if;
@@ -96,5 +97,6 @@ begin
     alu_res <= a;
     mdr_out <= b_reg;
     pc_out  <= pc_reg;
+    b_out   <= b_reg;
 
 end architecture rtl;
