@@ -52,7 +52,7 @@ architecture RTL of controller is
 begin
 
     process (clk) is
-        variable init_word : word_t := (others => '0');
+        constant init_word : word_t := (others => '0');
     begin
         if (rising_edge(clk)) then
             if (rst = '1') then

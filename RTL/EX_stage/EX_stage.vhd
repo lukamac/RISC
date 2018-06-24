@@ -77,7 +77,7 @@ begin
                                       );
 
     set_status: process(a) is
-        variable zero_word : word_t := (others => '0');
+        constant zero_word : word_t := (others => '0');
     begin
         if (a = zero_word) then
             status(Z) <= '1';
