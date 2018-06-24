@@ -18,8 +18,9 @@ entity IF_stage is
 		-- PC multiplexer inputs
 		b_in            : in word_t;
 		
-		-- PC multiplexer control signal
+		-- Control signals
 		ctrl_pc_in_mux	: in std_logic;
+        ctrl_pc_inc_en  : in std_logic;
 		
 		-- IF stage outputs
 		pc_out			: out address_t;
@@ -49,7 +50,8 @@ begin
 	end process pc_reg_proc;
 	
     -- PC incrementer
-	pc_add_4 <= pc_reg + 4;
+	pc_add_4 <= pc_reg + 4 when ctrl_pc_inc_en = '1' else
+                pc_reg;
     
     -- PC input mux
 	with ctrl_pc_in_mux select

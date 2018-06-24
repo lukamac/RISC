@@ -95,7 +95,7 @@ begin
              imm_reg;
 
     alu_res <= a;
-    mdr_out <= b_reg;
+    mdr_out <= c_reg;
     pc_out  <= pc_reg;
     b_out   <= b_reg;
 

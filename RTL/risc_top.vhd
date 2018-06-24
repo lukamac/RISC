@@ -18,8 +18,8 @@ entity risc_top is
             data_addr   : out address_t;
             data_out    : out word_t;
             data_in     : in word_t;
-            data_en     : out std_logic;
-            rw          : out std_logic;
+            data_rd     : out std_logic;
+            data_wr     : out std_logic;
             wait_data   : in std_logic
     );
 
@@ -40,8 +40,9 @@ architecture rtl of risc_top is
             -- PC multiplexer inputs
             b_in            : in word_t;
 		
-            -- PC multiplexer control signal
+            -- Control signals
             ctrl_pc_in_mux	: in std_logic;
+            ctrl_pc_inc_en  : in std_logic;
 		
             -- IF stage outputs
             pc_out			: out address_t;
@@ -142,6 +143,7 @@ architecture rtl of risc_top is
 
             -- IF stage control signals
             pc_in_mux : out std_logic; -- PC input selection mux control signal
+            pc_inc_en : out std_logic;
         
             -- OF stage control signals
             imm_out     : out immediate_t; -- immediate constant from instruction
@@ -155,7 +157,7 @@ architecture rtl of risc_top is
 
             -- MEM stage control signals
             wait_data, wait_instr : in std_logic;
-            mem_en, rw            : out std_logic;
+            data_rd, data_wr      : out std_logic;
             alu_res_mux           : out std_logic;
 
             -- WB stage control signals
@@ -174,6 +176,8 @@ architecture rtl of risc_top is
     signal ctrl_alu_b_mux, ctrl_alu_c_mux : std_logic;
     signal ctrl_wb_mux : std_logic;
     signal ctrl_alu_res_mux : std_logic;
+    signal ctrl_pc_inc_en : std_logic;
+    
     
     -- Signals coming out of IF stage
     signal if_ir_out : word_t;
@@ -206,6 +210,7 @@ begin
             instr_data => instr_data,
             b_in => mem_b_out,
             ctrl_pc_in_mux => ctrl_pc_in_mux,
+            ctrl_pc_inc_en => ctrl_pc_inc_en,
             pc_out => if_pc_out,
             ir_out => if_ir_out
             );
@@ -273,6 +278,7 @@ begin
             clk => clk,
             instr => if_ir_out,
             pc_in_mux => ctrl_pc_in_mux,
+            pc_inc_en => ctrl_pc_inc_en,
             imm_out => ctrl_17imm,
             reg_b_adr => ctrl_b_adr,
             reg_c_adr => ctrl_c_adr,
@@ -282,8 +288,8 @@ begin
             status => ex_status,
             wait_data => wait_data,
             wait_instr => wait_instr,
-            mem_en => data_en,
-            rw => rw,
+            data_rd => data_rd,
+            data_wr => data_wr,
             alu_res_mux => ctrl_alu_res_mux,
             reg_a_we => ctrl_reg_a_we,
             reg_a_adr => ctrl_a_adr,

@@ -62,4 +62,5 @@ begin
     data_out    <= mdr_out_reg;
     mdr_in      <= data_in;
     pc_out      <= b_reg;
+    mem_addr    <= alu_res_reg;
 end architecture RTL;
