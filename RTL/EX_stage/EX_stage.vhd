@@ -11,25 +11,23 @@ use work.op_codes.all;
 entity EX_stage is
     port
     (
-        clk, rst            : in std_logic;
+        clk, rst    : in std_logic;
 
         -- Operation code
-        ctrl_op             : in op_t;
+        ctrl_op     : in op_t;
 
-        -- ALU input B, possible inputs
-        b                   : in word_t;
-        pc                  : in address_t;
-
-        -- ALU input B, multiplexer control signal
+        -- ALU input B signals
+        b           : in word_t;
+        pc_in       : in address_t;
         ctrl_alu_b  : in std_logic;
 
-        -- ALU input C, possible inputs
+        -- ALU input C signals
         c, imm      : in word_t;
-
-        -- ALU input C, multiplexer control signal
         ctrl_alu_c  : in std_logic;
 
-        alu_res, mdr_out    : out word_t
+        status           : out status_t;
+        pc_out           : out address_t;
+        alu_res, mdr_out : out word_t
     );
 end entity EX_stage;
 
@@ -52,12 +50,6 @@ architecture rtl of EX_stage is
 
 begin
 
-    alu_inst : component alu port map (op => ctrl_op_reg,
-                                       b  => alu_b,
-                                       c  => alu_c,
-                                       a  => alu_res
-                                      );
-
     process (clk) is
     begin
         if (rising_edge(clk)) then
@@ -76,6 +68,20 @@ begin
             end if;
         end if;
     end process;
+
+    alu_inst : component alu port map (op => ctrl_op_reg,
+                                       b  => alu_b,
+                                       c  => alu_c,
+                                       a  => alu_res
+                                      );
+
+    set_status: process(alu_res) is
+    begin
+        if (alu_res = (others => '0')) then
+            status(Z) <= '1';
+        end if;
+        status(S) <= alu_res(alu_res'high);
+    end process set_status;
 
     alu_b <= b_reg when ctrl_alu_b = '0' else
              pc;
