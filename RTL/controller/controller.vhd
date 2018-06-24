@@ -43,6 +43,7 @@ architecture RTL of controller is
     type instr_array is array (natural range <>) of word_t;
     signal past_instr_reg, past_instr_next : instr_array(3 downto 0);
     signal status_reg : status_t := (others => '0');
+    signal branch : std_logic;
 
     constant OF_stage  : natural := 0;
     constant EX_stage  : natural := 1;
@@ -65,10 +66,14 @@ begin
         end if;
     end process;
 
-    past_instr_next(3 downto 1) <= past_instr_reg(2 downto 0);
-    past_instr_next(0) <= instr;
-    
-    
+    past_instr_next(OF_stage)  <= instr when branch = '0' else
+                                  (others => '0');
+    past_instr_next(EX_stage)  <= past_instr_reg(OF_stage) when branch = '0' else
+                                  (others => '0');
+    past_instr_next(MEM_stage) <= past_instr_reg(EX_stage) when branch = '0' else
+                                  (others => '0');
+    past_instr_next(WB_stage)  <= past_instr_reg(MEM_stage);
+
     OF_st: process(past_instr_reg(OF_stage)) is
         alias op    is past_instr_reg(OF_stage)(31 downto 27);
         alias b_adr is past_instr_reg(OF_stage)(21 downto 17);
@@ -105,39 +110,39 @@ begin
     begin
         mem_en <= '0';
         rw <= '0';
-        pc_in_mux <= '0';
+        branch <= '0';
         alu_res_mux <= '0';
         case op is
             --TODO When we add memory commands
             when BR_OP =>
                 case condition is
                     when AL =>
-                        pc_in_mux <= '1';
+                        branch <= '1';
                     when NV =>
-                        pc_in_mux <= '0';
+                        branch <= '0';
                     when ZR =>
                         if(status_reg(Z) = '1') then
-                            pc_in_mux <= '1';
+                            branch <= '1';
                         else
-                            pc_in_mux <= '0';
+                            branch <= '0';
                         end if;
                     when NZ =>
                         if(status_reg(Z) = '0') then
-                            pc_in_mux <= '1';
+                            branch <= '1';
                         else
-                            pc_in_mux <= '0';
+                            branch <= '0';
                         end if;
                     when PL =>
                         if(status_reg(S) = '0') then
-                            pc_in_mux <= '1';
+                            branch <= '1';
                         else
-                            pc_in_mux <= '0';
+                            branch <= '0';
                         end if;
                     when MI =>
                         if(status_reg(S) = '1') then
-                            pc_in_mux <= '1';
+                            branch <= '1';
                         else
-                            pc_in_mux <= '0';
+                            branch <= '0';
                         end if;
                     when others =>
                         null;
@@ -146,32 +151,32 @@ begin
                 alu_res_mux <= '1';
                 case condition is
                     when AL =>
-                        pc_in_mux <= '1';
+                        branch <= '1';
                     when NV =>
-                        pc_in_mux <= '0';
+                        branch <= '0';
                     when ZR =>
                         if(status_reg(Z) = '1') then
-                            pc_in_mux <= '1';
+                            branch <= '1';
                         else
-                            pc_in_mux <= '0';
+                            branch <= '0';
                         end if;
                     when NZ =>
                         if(status_reg(Z) = '0') then
-                            pc_in_mux <= '1';
+                            branch <= '1';
                         else
-                            pc_in_mux <= '0';
+                            branch <= '0';
                         end if;
                     when PL =>
                         if(status_reg(S) = '0') then
-                            pc_in_mux <= '1';
+                            branch <= '1';
                         else
-                            pc_in_mux <= '0';
+                            branch <= '0';
                         end if;
                     when MI =>
                         if(status_reg(S) = '1') then
-                            pc_in_mux <= '1';
+                            branch <= '1';
                         else
-                            pc_in_mux <= '0';
+                            branch <= '0';
                         end if;
                     when others =>
                         null;
@@ -180,6 +185,8 @@ begin
                 null;
         end case;
     end process MEM;
+
+    pc_in_mux <= branch;
 
 
     WB: process (past_instr_reg(WB_stage)) is
