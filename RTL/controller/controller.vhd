@@ -99,7 +99,7 @@ begin
     end process EX;
 
 
-    MEM: process (past_instr_reg(MEM_stage)) is
+    MEM: process (past_instr_reg(MEM_stage), status_reg) is
         alias op is past_instr_reg(MEM_stage)(31 downto 27);
         alias condition is past_instr_reg(MEM_stage)(2 downto 0);
     begin
@@ -199,7 +199,9 @@ begin
                 reg_a_we <= '1';
             when NOP_OP =>
                 reg_a_we <= '0';
-            when BR_OP | BRL_OP =>
+            when BR_OP =>
+                reg_a_we <= '0';
+            when BRL_OP =>
                 reg_a_we <= '1';
             when others =>
                 null;

@@ -28,10 +28,12 @@ architecture Behavioural of controller_tb is
             -- EX stage control signals
             alu_b_mux, alu_c_mux : out std_logic;
             alu_op       : out op_t;
+            status       : in status_t; -- status register input
 
             -- MEM stage control signals
             wait_data, wait_instr : in std_logic;
             mem_en, rw            : out std_logic;
+            alu_res_mux           : out std_logic;
 
             -- WB stage control signals
             reg_a_we  : out std_logic; -- register a write enable signal
@@ -43,10 +45,11 @@ architecture Behavioural of controller_tb is
     signal rst, clk : std_logic := '0';
     signal instr : word_t;
     signal imm_out : immediate_t;
-    signal pc_in_mux, alu_b_mux, alu_c_mux, reg_a_we, wb_mux : std_logic;
+    signal pc_in_mux, alu_b_mux, alu_c_mux, reg_a_we, wb_mux, alu_res_mux : std_logic;
     signal reg_a_adr, reg_b_adr, reg_c_adr : reg_address_t;
     signal alu_op : op_t;
-
+    signal status : status_t;
+    
     constant t_clk : time := 10 ns;
     constant t_wait : time := 20 ns;
 
@@ -61,10 +64,12 @@ begin
                                         alu_b_mux  => alu_b_mux,
                                         alu_c_mux  => alu_c_mux,
                                         alu_op     => alu_op,
+                                        status     => status,
                                         wait_data  => '0',
                                         wait_instr => '0',
                                         mem_en     => open,
                                         rw         => open,
+                                        alu_res_mux=> alu_res_mux,
                                         reg_a_we   => reg_a_we,
                                         reg_a_adr  => reg_a_adr,
                                         wb_mux     => wb_mux
@@ -287,6 +292,97 @@ begin
             report "SUBI WB";
 
 
+        -- BR_OP
+        addr_a := "-----";
+        addr_b := "00001";
+        addr_c := "00010";
+        imm12  := "---------" & ZR;
+        imm17  := addr_c & imm12;
+        instr <= BR_OP & addr_a & addr_b & addr_c & imm12;
+
+        -- test OF stage
+        wait until clk = '1';
+        instr <= NOP_instr;
+        wait until clk = '0';
+        assert reg_b_adr = addr_b and
+               reg_c_adr = addr_c and 
+               imm_out   = imm17
+            report "BR_ZR OF";
+
+
+        -- test EX stage
+        wait until clk = '1';
+        status(Z) <= '1';
+        status(S) <= '-';
+        instr <= NOP_instr;
+        wait until clk = '0';
+        assert alu_op = BR_OP and
+               alu_b_mux = '0' and
+               alu_c_mux = '0'
+            report "BR_ZR EX";
+
+        -- test MEM stage
+        wait until clk = '1';
+        instr <= NOP_instr;
+        wait until clk = '0';
+        assert pc_in_mux = '1'
+            report "BR_ZR MEM pc_in_mux";
+        assert alu_res_mux = '0'
+            report "BR_ZR MEM alu_res_mux";
+
+        -- test WB stage
+        wait until clk = '1';
+        instr <= NOP_instr;
+        wait until clk = '0';
+        assert reg_a_we = '0'
+            report "BR_ZR WB";
+
+
+        -- BRL_OP
+        addr_a := "-----";
+        addr_b := "00001";
+        addr_c := "00010";
+        imm12  := "---------" & PL;
+        imm17  := addr_c & imm12;
+        instr <= BRL_OP & addr_a & addr_b & addr_c & imm12;
+
+        -- test OF stage
+        wait until clk = '1';
+        instr <= NOP_instr;
+        wait until clk = '0';
+        assert reg_b_adr = addr_b and
+               reg_c_adr = addr_c and 
+               imm_out   = imm17
+            report "BRL_PL OF";
+
+
+        -- test EX stage
+        wait until clk = '1';
+        status(Z) <= '-';
+        status(S) <= '0';
+        instr <= NOP_instr;
+        wait until clk = '0';
+        assert alu_op = BRL_OP and
+               alu_b_mux = '0' and
+               alu_c_mux = '0'
+            report "BRL_PL EX";
+
+        -- test MEM stage
+        wait until clk = '1';
+        instr <= NOP_instr;
+        wait until clk = '0';
+        assert pc_in_mux = '1'
+            report "BRL_PL MEM pc_in_mux";
+        assert alu_res_mux = '1'
+            report "BRL_PL MEM alu_res_mux";
+
+        -- test WB stage
+        wait until clk = '1';
+        instr <= NOP_instr;
+        wait until clk = '0';
+        assert reg_a_we = '1'
+            report "BRL_PL WB";
+        
         wait;
     end process stimulus;
 

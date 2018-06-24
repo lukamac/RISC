@@ -38,7 +38,7 @@ architecture rtl of risc_top is
             instr_data		: in word_t;
 		
             -- PC multiplexer inputs
-            pc_alu_res_in  : in word_t;
+            b_in            : in word_t;
 		
             -- PC multiplexer control signal
             ctrl_pc_in_mux	: in std_logic;
@@ -83,7 +83,7 @@ architecture rtl of risc_top is
             ctrl_op             : in op_t;
 
             -- ALU input B, possible inputs
-            b                   : in word_t;
+            b_in                : in word_t;
             pc_in               : in address_t;
 
             -- ALU input B, multiplexer control signal
@@ -97,8 +97,8 @@ architecture rtl of risc_top is
 
             status           : out status_t;
             pc_out           : out address_t;
-        
-            alu_res, mdr_out    : out word_t
+            b_out            : out word_t;
+            alu_res, mdr_out : out word_t
         );
     end component EX_stage;
     
@@ -109,6 +109,7 @@ architecture rtl of risc_top is
             pc_in       : in address_t;
             mdr_out     : in word_t;
             data_in     : in word_t;
+            b_in        : in word_t;
 
             -- control signals
             ctrl_alu_res_mux : in std_logic;
@@ -116,7 +117,8 @@ architecture rtl of risc_top is
             mem_addr    : out address_t;
             alu_res_out : out word_t;
             data_out    : out word_t;
-            mdr_in      : out word_t
+            mdr_in      : out word_t;
+            pc_out      : out address_t
         );
     end component MEM_stage;
     
@@ -186,9 +188,11 @@ architecture rtl of risc_top is
     signal ex_alu_res, ex_mdr_out : word_t;
     signal ex_status : status_t;
     signal ex_pc_out : address_t;
+    signal ex_b_out  : word_t;
     
     -- Signals coming out of MEM stage
     signal mem_alu_res : word_t;
+    signal mem_b_out   : word_t;
     
     -- Signals coming out of WB stage
     signal wb_mdr_in : word_t;
@@ -200,7 +204,7 @@ begin
             rst => rst,
             instr_addr => instr_addr,
             instr_data => instr_data,
-            pc_alu_res_in => mem_alu_res,
+            b_in => mem_b_out,
             ctrl_pc_in_mux => ctrl_pc_in_mux,
             pc_out => if_pc_out,
             ir_out => if_ir_out
@@ -226,7 +230,7 @@ begin
             clk => clk,
             rst => rst,
             ctrl_op => ctrl_alu_op,
-            b => of_b_out,
+            b_in => of_b_out,
             pc_in => of_pc_out,
             ctrl_alu_b => ctrl_alu_b_mux,
             c => of_c_out,
@@ -234,6 +238,7 @@ begin
             ctrl_alu_c => ctrl_alu_c_mux,
             status => ex_status,
             pc_out => ex_pc_out,
+            b_out => ex_b_out,
             alu_res => ex_alu_res,
             mdr_out => ex_mdr_out
             );
@@ -245,11 +250,13 @@ begin
             pc_in => ex_pc_out,
             mdr_out => ex_mdr_out, 
             data_in => data_in,
+            b_in => ex_b_out,
             ctrl_alu_res_mux => ctrl_alu_res_mux,
             mem_addr => data_addr,
             alu_res_out => mem_alu_res,
             data_out => data_out,
-            mdr_in => wb_mdr_in
+            mdr_in => wb_mdr_in,
+            pc_out => mem_b_out
             );
             
     wb_inst: WB_stage port map(
