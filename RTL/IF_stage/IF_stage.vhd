@@ -1,6 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
+
 library work;
 use work.RISC_const_and_types.all;
 
@@ -15,7 +16,7 @@ entity IF_stage is
 		instr_data		: in word_t;
 		
 		-- PC multiplexer inputs
-		pc_alu_res_in  : in word_t;
+		b_in            : in word_t;
 		
 		-- PC multiplexer control signal
 		ctrl_pc_in_mux	: in std_logic;
@@ -53,7 +54,7 @@ begin
     -- PC input mux
 	with ctrl_pc_in_mux select
 		pc_next <=  pc_add_4 when '0',
-					pc_alu_res_in when others;
+					b_in when others;
     
 	-- IR output
 	ir_out <= instr_data;
