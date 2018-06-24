@@ -80,8 +80,8 @@ begin
                                   past_instr_reg(MEM_stage);
 
 
-    pc_inc_en <= '1' when wait_data = '1' or wait_instr = '1' else
-                 '0';
+    pc_inc_en <= '0' when wait_data = '1' or wait_instr = '1' else
+                 '1';
 
     OF_st: process(past_instr_reg(OF_stage)) is
         alias op    is past_instr_reg(OF_stage)(31 downto 27);
