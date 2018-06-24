@@ -26,4 +26,12 @@ package op_codes is
     constant SHCI_OP    : op_t := "10010";
     constant BR_OP      : op_t := "10011";
     constant BRL_OP     : op_t := "10100";
+    constant LD_OP      : op_t := "10101";
+    constant LA_OP      : op_t := "10110";
+    constant ST_OP      : op_t := "10111";
+    constant LDI_OP     : op_t := "11000";
+    constant LAI_OP     : op_t := "11001";
+    constant STI_OP     : op_t := "11010";
+    constant LDR_OP     : op_t := "11011";
+    constant STR_OP     : op_t := "11100";
 end package op_codes;
