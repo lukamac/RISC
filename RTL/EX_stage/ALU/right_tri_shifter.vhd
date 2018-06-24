@@ -32,8 +32,8 @@ begin
 
     -- Level 0
     with op select
-        lv0_sin <= a(31) when SHRA_OP,
-                   a(0)  when SHC_OP,
+        lv0_sin <= a(31) when SHRA_OP | SHRAI_OP,
+                   a(0)  when SHC_OP  | SHCI_OP,
                    '0'   when others;
 
     lv0_out <= lv0_sin & a(31 downto 1) when amt(0) = '1' else
@@ -42,8 +42,8 @@ begin
 
     -- Level 1
     with op select
-        lv1_sin <= (others => lv0_out(31))  when SHRA_OP,
-                   lv0_out(1  downto  0)    when SHC_OP,
+        lv1_sin <= (others => lv0_out(31))  when SHRA_OP | SHRAI_OP,
+                   lv0_out(1  downto  0)    when SHC_OP  | SHCI_OP,
                    "00"                     when others;
 
     lv1_out <= lv1_sin & lv0_out(31 downto 2) when amt(1) = '1' else
@@ -52,8 +52,8 @@ begin
 
     -- Level 2
     with op select
-        lv2_sin <= (others => lv1_out(31))  when SHRA_OP,
-                   lv1_out(3 downto 0)      when SHC_OP,
+        lv2_sin <= (others => lv1_out(31))  when SHRA_OP | SHRAI_OP,
+                   lv1_out(3 downto 0)      when SHC_OP  | SHCI_OP,
                    "0000"                   when others;
 
     lv2_out <= lv2_sin & lv1_out(31 downto 4) when amt(2) = '1' else
@@ -62,8 +62,8 @@ begin
 
     -- Level 3
     with op select
-        lv3_sin <= (others => lv2_out(31))  when SHRA_OP,
-                   lv2_out(7  downto  0)    when SHC_OP,
+        lv3_sin <= (others => lv2_out(31))  when SHRA_OP | SHRAI_OP,
+                   lv2_out(7  downto  0)    when SHC_OP  | SHCI_OP,
                    "00000000"               when others;
 
     lv3_out <= lv3_sin & lv2_out(31 downto 8) when amt(3) = '1' else
@@ -72,8 +72,8 @@ begin
 
     -- Level 4
     with op select
-        lv4_sin <= (others => lv3_out(31))  when SHRA_OP,
-                   lv3_out(15 downto  0)    when SHC_OP,
+        lv4_sin <= (others => lv3_out(31))  when SHRA_OP | SHRAI_OP,
+                   lv3_out(15 downto  0)    when SHC_OP  | SHCI_OP,
                    "0000000000000000"       when others;
 
     lv4_out <= lv4_sin & lv3_out(31 downto 16) when amt(4) = '1' else

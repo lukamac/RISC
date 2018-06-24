@@ -50,7 +50,7 @@ architecture rtl of alu is
 
 begin
 
-    choose_result: process (op, b, adder_res, neg_c, not_c, b_and_c, b_or_c, rts_res, ls_res) is
+    choose_result: process (op, b, c, adder_res, neg_c, not_c, b_and_c, b_or_c, rts_res, ls_res) is
     begin
         case (op) is
             when ADD_OP | ADDI_OP |
