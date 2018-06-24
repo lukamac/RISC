@@ -242,6 +242,7 @@ begin
             clk => clk,
             rst => rst,
             alu_res_in => ex_alu_res,
+            pc_in => ex_pc_out,
             mdr_out => ex_mdr_out, 
             data_in => data_in,
             ctrl_alu_res_mux => ctrl_alu_res_mux,
