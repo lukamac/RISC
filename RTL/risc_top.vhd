@@ -84,7 +84,7 @@ architecture rtl of risc_top is
 
             -- ALU input B, possible inputs
             b                   : in word_t;
-            pc                  : in address_t;
+            pc_in               : in address_t;
 
             -- ALU input B, multiplexer control signal
             ctrl_alu_b  : in std_logic;
@@ -95,6 +95,9 @@ architecture rtl of risc_top is
             -- ALU input C, multiplexer control signal
             ctrl_alu_c  : in std_logic;
 
+            status           : out status_t;
+            pc_out           : out address_t;
+        
             alu_res, mdr_out    : out word_t
         );
     end component EX_stage;
@@ -103,8 +106,12 @@ architecture rtl of risc_top is
         port (
             clk, rst    : in std_logic;
             alu_res_in  : in word_t;
+            pc_in       : in address_t;
             mdr_out     : in word_t;
             data_in     : in word_t;
+
+            -- control signals
+            ctrl_alu_res_mux : in std_logic;
 
             mem_addr    : out address_t;
             alu_res_out : out word_t;
@@ -141,11 +148,13 @@ architecture rtl of risc_top is
 
             -- EX stage control signals
             alu_b_mux, alu_c_mux : out std_logic;
-            alu_op       : out op_t;
+            alu_op               : out op_t;
+            status               : in status_t; -- status register input
 
             -- MEM stage control signals
             wait_data, wait_instr : in std_logic;
             mem_en, rw            : out std_logic;
+            alu_res_mux           : out std_logic;
 
             -- WB stage control signals
             reg_a_we  : out std_logic; -- register a write enable signal
@@ -162,6 +171,7 @@ architecture rtl of risc_top is
     signal ctrl_alu_op : op_t;
     signal ctrl_alu_b_mux, ctrl_alu_c_mux : std_logic;
     signal ctrl_wb_mux : std_logic;
+    signal ctrl_alu_res_mux : std_logic;
     
     -- Signals coming out of IF stage
     signal if_ir_out : word_t;
@@ -174,6 +184,8 @@ architecture rtl of risc_top is
     
     -- Signals coming out of EX stage
     signal ex_alu_res, ex_mdr_out : word_t;
+    signal ex_status : status_t;
+    signal ex_pc_out : address_t;
     
     -- Signals coming out of MEM stage
     signal mem_alu_res : word_t;
@@ -215,11 +227,13 @@ begin
             rst => rst,
             ctrl_op => ctrl_alu_op,
             b => of_b_out,
-            pc => of_pc_out,
+            pc_in => of_pc_out,
             ctrl_alu_b => ctrl_alu_b_mux,
             c => of_c_out,
             imm => of_32imm_out,
             ctrl_alu_c => ctrl_alu_c_mux,
+            status => ex_status,
+            pc_out => ex_pc_out,
             alu_res => ex_alu_res,
             mdr_out => ex_mdr_out
             );
@@ -230,6 +244,7 @@ begin
             alu_res_in => ex_alu_res,
             mdr_out => ex_mdr_out, 
             data_in => data_in,
+            ctrl_alu_res_mux => ctrl_alu_res_mux,
             mem_addr => data_addr,
             alu_res_out => mem_alu_res,
             data_out => data_out,
@@ -256,10 +271,12 @@ begin
             alu_b_mux => ctrl_alu_b_mux, 
             alu_c_mux => ctrl_alu_c_mux,
             alu_op => ctrl_alu_op,
+            status => ex_status,
             wait_data => wait_data,
             wait_instr => wait_instr,
             mem_en => data_en,
             rw => rw,
+            alu_res_mux => ctrl_alu_res_mux,
             reg_a_we => ctrl_reg_a_we,
             reg_a_adr => ctrl_a_adr,
             wb_mux => ctrl_wb_mux

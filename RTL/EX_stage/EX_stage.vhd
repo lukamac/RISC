@@ -64,7 +64,7 @@ begin
                 imm_reg     <= imm;
                 b_reg       <= b;
                 c_reg       <= c;
-                pc_reg      <= pc;
+                pc_reg      <= pc_in;
             end if;
         end if;
     end process;
@@ -90,5 +90,7 @@ begin
              imm_reg;
 
     mdr_out <= b_reg;
+    
+    pc_out <= pc_reg;
 
 end architecture rtl;

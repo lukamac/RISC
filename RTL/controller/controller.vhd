@@ -42,6 +42,7 @@ architecture RTL of controller is
 
     type instr_array is array (natural range <>) of word_t;
     signal past_instr_reg, past_instr_next : instr_array(3 downto 0);
+    signal status_reg : status_t := (others => '0');
 
     constant OF_stage  : natural := 0;
     constant EX_stage  : natural := 1;
@@ -56,8 +57,10 @@ begin
         if (rising_edge(clk)) then
             if (rst = '1') then
                 past_instr_reg <= (others => (others => '0'));
+                status_reg <= (others => '0');
             else
                 past_instr_reg <= past_instr_next;
+                status_reg <= status;
             end if;
         end if;
     end process;
