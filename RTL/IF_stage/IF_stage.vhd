@@ -31,8 +31,6 @@ architecture rtl of IF_stage is
 	
 	signal pc_reg : address_t := (others => '0'); -- Program counter register
 	signal pc_add_4 : address_t := (others => '0');
-	signal ir_reg : word_t := (others => '0'); -- Instruction register
-	signal pc_out_reg : address_t := (others => '0'); -- PC output register
 	signal pc_next : address_t := (others => '0'); -- Next value for program counter register
 	
 begin

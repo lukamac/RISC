@@ -101,12 +101,81 @@ begin
 
     MEM: process (past_instr_reg(MEM_stage)) is
         alias op is past_instr_reg(MEM_stage)(31 downto 27);
+        alias condition is past_instr_reg(MEM_stage)(2 downto 0);
     begin
         mem_en <= '0';
         rw <= '0';
         pc_in_mux <= '0';
+        alu_res_mux <= '0';
         case op is
             --TODO When we add memory commands
+            when BR_OP =>
+                case condition is
+                    when AL =>
+                        pc_in_mux <= '1';
+                    when NV =>
+                        pc_in_mux <= '0';
+                    when ZR =>
+                        if(status_reg(Z) = '1') then
+                            pc_in_mux <= '1';
+                        else
+                            pc_in_mux <= '0';
+                        end if;
+                    when NZ =>
+                        if(status_reg(Z) = '0') then
+                            pc_in_mux <= '1';
+                        else
+                            pc_in_mux <= '0';
+                        end if;
+                    when PL =>
+                        if(status_reg(S) = '0') then
+                            pc_in_mux <= '1';
+                        else
+                            pc_in_mux <= '0';
+                        end if;
+                    when MI =>
+                        if(status_reg(S) = '1') then
+                            pc_in_mux <= '1';
+                        else
+                            pc_in_mux <= '0';
+                        end if;
+                    when others =>
+                        null;
+                end case;
+            when BRL_OP =>
+                alu_res_mux <= '1';
+                case condition is
+                    when AL =>
+                        pc_in_mux <= '1';
+                    when NV =>
+                        pc_in_mux <= '0';
+                    when ZR =>
+                        if(status_reg(Z) = '1') then
+                            pc_in_mux <= '1';
+                        else
+                            pc_in_mux <= '0';
+                        end if;
+                    when NZ =>
+                        if(status_reg(Z) = '0') then
+                            pc_in_mux <= '1';
+                        else
+                            pc_in_mux <= '0';
+                        end if;
+                    when PL =>
+                        if(status_reg(S) = '0') then
+                            pc_in_mux <= '1';
+                        else
+                            pc_in_mux <= '0';
+                        end if;
+                    when MI =>
+                        if(status_reg(S) = '1') then
+                            pc_in_mux <= '1';
+                        else
+                            pc_in_mux <= '0';
+                        end if;
+                    when others =>
+                        null;
+                end case;
             when others =>
                 null;
         end case;
@@ -127,9 +196,11 @@ begin
                  ADD_OP  | SUB_OP  | OR_OP    | AND_OP  |
                  SHR_OP  | SHL_OP  | SHRA_OP  | SHC_OP  |
                  NEG_OP  | NOT_OP  =>
-                     reg_a_we <= '1';
+                reg_a_we <= '1';
             when NOP_OP =>
                 reg_a_we <= '0';
+            when BR_OP | BRL_OP =>
+                reg_a_we <= '1';
             when others =>
                 null;
         end case;
