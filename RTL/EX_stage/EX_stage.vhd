@@ -81,6 +81,8 @@ begin
     begin
         if (a = zero_word) then
             status(Z) <= '1';
+        else
+            status(Z) <= '0';
         end if;
         status(S) <= a(a'high);
     end process set_status;
