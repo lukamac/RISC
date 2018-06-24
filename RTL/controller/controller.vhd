@@ -41,10 +41,10 @@ architecture RTL of controller is
     type instr_array is array (natural range <>) of word_t;
     signal past_instr_reg, past_instr_next : instr_array(3 downto 0);
 
-    constant OF_stage : natural := 0;
-    constant EX_stage : natural := 1;
+    constant OF_stage  : natural := 0;
+    constant EX_stage  : natural := 1;
     constant MEM_stage : natural := 2;
-    constant WB_stage : natural := 3;
+    constant WB_stage  : natural := 3;
 
 begin
 
@@ -65,11 +65,10 @@ begin
     
     
     OF_st: process(past_instr_reg(OF_stage)) is
-        alias OF_instr : word_t is past_instr_reg(OF_stage);
-        alias op       : op_t          is OF_instr(31 downto 27);
-        alias b_adr    : reg_address_t is OF_instr(21 downto 17);
-        alias c_adr    : reg_address_t is OF_instr(16 downto 12);
-        alias imm      : immediate_t   is OF_instr(16 downto 0);
+        alias op    is past_instr_reg(OF_stage)(31 downto 27);
+        alias b_adr is past_instr_reg(OF_stage)(21 downto 17);
+        alias c_adr is past_instr_reg(OF_stage)(16 downto 12);
+        alias imm   is past_instr_reg(OF_stage)(16 downto 0);
     begin
         reg_b_adr <= b_adr;
         reg_c_adr <= c_adr;
@@ -78,8 +77,7 @@ begin
     
 
     EX: process (past_instr_reg(EX_stage)) is
-        alias EX_instr : word_t is past_instr_reg(EX_stage);
-        alias op : op_t is EX_instr(31 downto 27);
+        alias op is past_instr_reg(EX_stage)(31 downto 27);
     begin
         alu_op <= op;
 
@@ -97,11 +95,11 @@ begin
 
 
     MEM: process (past_instr_reg(MEM_stage)) is
-        alias MEM_instr : word_t is past_instr_reg(MEM_stage);
-        alias op : op_t is MEM_instr(31 downto 27);
+        alias op is past_instr_reg(MEM_stage)(31 downto 27);
     begin
         mem_en <= '0';
         rw <= '0';
+        pc_in_mux <= '0';
         case op is
             --TODO When we add memory commands
             when others =>
@@ -111,9 +109,8 @@ begin
 
 
     WB: process (past_instr_reg(WB_stage)) is
-        alias WB_instr : word_t is past_instr_reg(WB_stage);
-        alias op : op_t is WB_instr(31 downto 27);
-        alias a_addr : reg_address_t is WB_instr(26 downto 22);
+        alias op     is past_instr_reg(WB_stage)(31 downto 27);
+        alias a_addr is past_instr_reg(WB_stage)(26 downto 22);
     begin
         wb_mux    <= '0';
         reg_a_we  <= '0';
