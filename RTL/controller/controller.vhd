@@ -22,11 +22,13 @@ entity controller is
 
         -- EX stage control signals
         alu_b_mux, alu_c_mux : out std_logic;
-        alu_op       : out op_t;
+        alu_op               : out op_t;
+        status               : in status_t; -- status register input
 
         -- MEM stage control signals
         wait_data, wait_instr : in std_logic;
         mem_en, rw            : out std_logic;
+        alu_res_mux           : out std_logic;
 
         -- WB stage control signals
         reg_a_we  : out std_logic; -- register a write enable signal

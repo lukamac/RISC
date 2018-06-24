@@ -3,6 +3,7 @@ use ieee.std_logic_1164.all;
 
 package RISC_const_and_types is
     
+    -- Signal sizes and types
     constant WORD_SIZE : integer := 32;
     subtype word_t is std_logic_vector(WORD_SIZE - 1 downto 0);
 	
@@ -20,5 +21,12 @@ package RISC_const_and_types is
 
     constant SHIFT_AMOUNT_SIZE : integer := 5;
     subtype s_amount_t is std_logic_vector(SHIFT_AMOUNT_SIZE - 1 downto 0);
+    
+    constant STATUS_SIZE : integer := 2;
+    subtype status_t is std_logic_vector(STATUS_SIZE - 1 downto 0);
+    
+    -- Status register bit indices
+    constant Z : natural := 0;
+    constant S : natural := 1;
 
 end package RISC_const_and_types;

@@ -24,4 +24,6 @@ package op_codes is
     constant SHRAI_OP   : op_t := "10000";
     constant SHC_OP     : op_t := "10001";
     constant SHCI_OP    : op_t := "10010";
+    constant BR_OP      : op_t := "10011";
+    constant BRL_OP     : op_t := "10100";
 end package op_codes;

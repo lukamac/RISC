@@ -49,31 +49,21 @@ begin
 		end if;
 	end process pc_reg_proc;
 	
-	-- IR output
-	ir_out <= instr_data;
-	
-	-- PC incrementer
+    -- PC incrementer
 	pc_add_4 <= pc_reg + 4;
-	
-	-- PC input mux
+    
+    -- PC input mux
 	with ctrl_pc_in_mux select
 		pc_next <=  pc_add_4 when '0',
 					pc_alu_res_in when others;
+    
+	-- IR output
+	ir_out <= instr_data;
 	
 	-- Instruction address output
 	instr_addr <= pc_reg;
 	
 	-- PC output
-	pc_out_reg_proc: process(clk) is
-	begin
-		if (rising_edge(clk)) then
-			if(rst = '1') then
-				pc_out_reg <= (others => '0');
-			else
-				pc_out_reg <= pc_reg;
-			end if;
-		end if;
-	end process pc_out_reg_proc;
-	pc_out <= pc_out_reg;
+	pc_out <= pc_add_4;
 
 end rtl;
