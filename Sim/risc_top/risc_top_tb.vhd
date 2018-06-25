@@ -112,6 +112,83 @@ begin
         assert data_addr = std_logic_vector(to_unsigned(4, data_addr'length))
             report "ALU_res wrong";
 
+        wait until clk = '1';
+
+        --------- PIPELINE TEST -----------
+        -- in reg(0) we have 4 and rest is 0
+
+        wait until clk = '0';
+
+        op := SUBI_OP;
+        addr_a := "00001";
+        addr_b := "00000"; -- 4
+        imm17  := std_logic_vector(to_unsigned(2, imm17'length));
+
+        instr_data <= op & addr_a & addr_b & imm17;
+
+        wait until clk = '1';
+
+        wait until clk = '0';
+
+        op := ORI_OP;
+        addr_a := "00010";
+        addr_b := "00000"; -- 4
+        imm17  := "00000000000000011";
+
+        instr_data <= op & addr_a & addr_b & imm17;
+
+        wait until clk = '1';
+
+        wait until clk = '0';
+
+        op := SHLI_OP;
+        addr_a := "00011";
+        addr_b := "00000"; -- 4
+        imm17  := std_logic_vector(to_unsigned(3, imm17'length));
+
+        instr_data <= op & addr_a & addr_b & imm17;
+
+        wait until clk = '1';
+
+        wait until clk = '0';
+
+        op := SHCI_OP;
+        addr_a := "00100";
+        addr_b := "00000";
+        imm17  := std_logic_vector(to_unsigned(3, imm17'length));
+
+        instr_data <= op & addr_a & addr_b & imm17;
+
+        assert data_addr = std_logic_vector(to_unsigned(2, data_addr'length))
+        report "Wrong result from SUBI_OP.";
+
+        wait until clk = '1';
+
+        wait until clk = '0';
+
+        instr_data <= NOP_instr;
+
+        assert data_addr = X"00000007"
+        report "Wrong result from ORI_OP.";
+
+        wait until clk = '1';
+
+        wait until clk = '0';
+
+        instr_data <= NOP_instr;
+
+        assert data_addr = X"00000020"
+        report "Wrong result from SHLI_OP.";
+
+        wait until clk = '1';
+
+        wait until clk = '0';
+
+        instr_data <= NOP_instr;
+
+        assert data_addr = X"80000000"
+        report "Wrong result from SHCI_OP.";
+
         --------- END STIMULUS ------------
         wait;
     end process stimulus;
