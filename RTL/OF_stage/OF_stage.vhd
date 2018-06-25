@@ -24,6 +24,7 @@ entity OF_stage is
         ctrl_a_adr  : in reg_address_t; -- a register address
         ctrl_b_adr  : in reg_address_t; -- b register address
         ctrl_c_adr  : in reg_address_t; -- c register address
+        ctrl_wait_mem : in std_logic; -- memory wait signal
         
         -- reset and clock signals
         rst         : in std_logic;
@@ -74,7 +75,9 @@ begin
                 d_out => imm_out
     );
     
-    pc_next <= pc_in;
+    pc_next <= pc_in when ctrl_wait_mem = '0' else
+               pc_reg;
+           
     pc_buffer: process (clk) is
     begin
         if (rising_edge(clk)) then

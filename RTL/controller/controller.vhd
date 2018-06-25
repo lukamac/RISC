@@ -14,7 +14,6 @@ entity controller is
 
         -- IF stage control signals
         pc_in_mux : out std_logic; -- PC input selection mux control signal
-        pc_inc_en : out std_logic;
         
         -- OF stage control signals
         imm_out       : out immediate_t; -- immediate constant from instruction
@@ -34,7 +33,10 @@ entity controller is
         -- WB stage control signals
         reg_a_we  : out std_logic; -- register a write enable signal
         reg_a_adr : out reg_address_t; -- register a address
-        wb_mux    : out std_logic
+        wb_mux    : out std_logic;
+        
+        -- Global control signals
+        wait_mem  : out std_logic
     );
 end entity controller;
 
@@ -80,8 +82,8 @@ begin
                                   past_instr_reg(MEM_stage);
 
 
-    pc_inc_en <= '0' when wait_data = '1' or wait_instr = '1' else
-                 '1';
+    wait_mem  <= '1' when wait_data = '1' or wait_instr = '1' else
+                 '0';
 
     OF_st: process(past_instr_reg(OF_stage)) is
         alias op    is past_instr_reg(OF_stage)(31 downto 27);

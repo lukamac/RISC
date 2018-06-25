@@ -20,7 +20,7 @@ entity IF_stage is
 		
 		-- Control signals
 		ctrl_pc_in_mux	: in std_logic;
-        ctrl_pc_inc_en  : in std_logic;
+        ctrl_wait_mem   : in std_logic;
 		
 		-- IF stage outputs
 		pc_out			: out address_t;
@@ -50,7 +50,7 @@ begin
 	end process pc_reg_proc;
 	
     -- PC incrementer
-	pc_add_4 <= pc_reg + 4 when ctrl_pc_inc_en = '1' else
+	pc_add_4 <= pc_reg + 4 when ctrl_wait_mem = '0' else
                 pc_reg;
     
     -- PC input mux
