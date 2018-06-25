@@ -28,7 +28,8 @@ entity EX_stage is
         status           : out status_t;
         pc_out           : out address_t;
         b_out            : out word_t;
-        alu_res, mdr_out : out word_t
+        alu_res, mdr_out : out word_t;
+        ctrl_wait_mem    : in std_logic
     );
 end entity EX_stage;
 
@@ -45,8 +46,9 @@ architecture rtl of EX_stage is
         );
     end component alu;
 
-    signal ctrl_op_reg : op_t;
+    signal ctrl_op_reg, ctrl_op_next : op_t;
     signal imm_reg, b_reg, c_reg, pc_reg : word_t;
+    signal imm_next, b_next, c_next, pc_next : word_t;
     signal alu_b, alu_c : word_t;
     signal a : word_t;
 
@@ -62,14 +64,25 @@ begin
                 c_reg       <= (others => '0');
                 pc_reg      <= (others => '0');
             else
-                ctrl_op_reg <= ctrl_op;
-                imm_reg     <= imm;
-                b_reg       <= b_in;
-                c_reg       <= c;
-                pc_reg      <= pc_in;
+                ctrl_op_reg <= ctrl_op_next;
+                imm_reg     <= imm_next;
+                b_reg       <= b_next;
+                c_reg       <= c_next;
+                pc_reg      <= pc_next;
             end if;
         end if;
     end process;
+    ctrl_op_next <= ctrl_op when ctrl_wait_mem = '0' else
+                    ctrl_op_reg;
+    imm_next <= imm when ctrl_wait_mem = '0' else
+                imm_reg;
+    b_next <= b_in when ctrl_wait_mem = '0' else
+              b_reg;
+    c_next <= c when ctrl_wait_mem = '0' else
+              c_reg;
+    pc_next <= pc_in when ctrl_wait_mem = '0' else
+               pc_reg;
+    
 
     alu_inst : component alu port map (op => ctrl_op_reg,
                                        b  => alu_b,

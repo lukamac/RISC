@@ -8,14 +8,15 @@ use work.RISC_const_and_types.all;
 entity WB_stage is
     port
     (
-        rst, clk   : in std_logic;
+        rst, clk        : in std_logic;
 
-        ctrl_wb_mux: in std_logic;
+        ctrl_wb_mux     : in std_logic;
+        ctrl_wait_mem   : in std_logic;
 
-        alu_res_in : in word_t;
-        mdr_in     : in word_t;
+        alu_res_in      : in word_t;
+        mdr_in          : in word_t;
 
-        data_out   : out word_t
+        data_out        : out word_t
     );
 end entity WB_stage;
 
@@ -37,8 +38,10 @@ begin
         end if;
     end process;
 
-    mdr_in_next  <= mdr_in;
-    alu_res_next <= alu_res_in;
+    mdr_in_next  <= mdr_in when ctrl_wait_mem = '0' else
+                    mdr_in_reg;
+    alu_res_next <= alu_res_in when ctrl_wait_mem = '0' else
+                    alu_res_reg;
 
     data_out <= alu_res_reg when ctrl_wb_mux = '0' else
                 mdr_in_reg;

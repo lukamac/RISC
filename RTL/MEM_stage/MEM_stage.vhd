@@ -18,13 +18,14 @@ entity MEM_stage is
         
         -- control signals
         ctrl_alu_res_mux : in std_logic;
+        ctrl_wait_mem    : in std_logic;
 
         -- output ports
         mem_addr    : out address_t;
         alu_res_out : out word_t;
         data_out    : out word_t;
         mdr_in      : out word_t;
-        pc_out      : out address_t
+        b_out       : out address_t
     );
 end entity MEM_stage;
 
@@ -52,15 +53,19 @@ begin
         end if;
     end process;
 
-    alu_res_next <= alu_res_in;
-    mdr_out_next <= mdr_out;
-    pc_next <= pc_in;
-    b_next <= b_in;
+    alu_res_next <= alu_res_in when ctrl_wait_mem = '0' else
+                    alu_res_reg;
+    mdr_out_next <= mdr_out when ctrl_wait_mem = '0' else
+                    mdr_out_reg;
+    pc_next <= pc_in when ctrl_wait_mem = '0' else
+               pc_reg;
+    b_next <= b_in when ctrl_wait_mem = '0' else
+              b_reg;
 
     alu_res_out <= alu_res_reg when ctrl_alu_res_mux = '0' else
                    pc_reg;
     data_out    <= mdr_out_reg;
     mdr_in      <= data_in;
-    pc_out      <= b_reg;
+    b_out       <= b_reg;
     mem_addr    <= alu_res_reg;
 end architecture RTL;
