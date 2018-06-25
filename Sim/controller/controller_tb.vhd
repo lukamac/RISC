@@ -32,7 +32,7 @@ architecture Behavioural of controller_tb is
 
             -- MEM stage control signals
             wait_data, wait_instr : in std_logic;
-            mem_en, rw            : out std_logic;
+            data_rd, data_wr      : out std_logic;
             alu_res_mux           : out std_logic;
 
             -- WB stage control signals
@@ -49,6 +49,7 @@ architecture Behavioural of controller_tb is
     signal reg_a_adr, reg_b_adr, reg_c_adr : reg_address_t;
     signal alu_op : op_t;
     signal status : status_t;
+    signal data_rd, data_wr : std_logic;
     
     constant t_clk : time := 10 ns;
     constant t_wait : time := 20 ns;
@@ -67,8 +68,8 @@ begin
                                         status     => status,
                                         wait_data  => '0',
                                         wait_instr => '0',
-                                        mem_en     => open,
-                                        rw         => open,
+                                        data_rd    => data_rd,
+                                        data_wr    => data_wr,
                                         alu_res_mux=> alu_res_mux,
                                         reg_a_we   => reg_a_we,
                                         reg_a_adr  => reg_a_adr,
@@ -293,6 +294,7 @@ begin
 
 
         -- BR_OP
+
         addr_a := "-----";
         addr_b := "00001";
         addr_c := "00010";
@@ -339,6 +341,7 @@ begin
 
 
         -- BRL_OP
+
         addr_a := "-----";
         addr_b := "00001";
         addr_c := "00010";
@@ -383,6 +386,115 @@ begin
         assert reg_a_we = '1'
             report "BRL_PL WB";
         
+
+        -- LD_OP
+
+        addr_a := "00100";
+        addr_b := "00001";
+        addr_c := "00010";
+        imm12  := "100100100100";
+        imm17  := addr_c & imm12;
+        instr <= LD_OP & addr_a & addr_b & addr_c & imm12;
+
+        -- test OF stage
+        wait until clk = '1';
+        instr <= NOP_instr;
+        wait until clk = '0';
+        assert reg_b_adr = addr_b and
+               reg_c_adr = addr_c and 
+               imm_out   = imm17
+            report "LD OF";
+
+
+        -- test EX stage
+        wait until clk = '1';
+        instr <= NOP_instr;
+        wait until clk = '0';
+        assert alu_op = ADDI_OP
+            report "LD EX alu_op";
+        assert alu_b_mux = '0'
+            report "LD EX alu_b_mux";
+        assert alu_c_mux = '1'
+            report "LD EX alu_c_mux";
+
+        -- test MEM stage
+        wait until clk = '1';
+        instr <= NOP_instr;
+        wait until clk = '0';
+        assert pc_in_mux = '0'
+            report "LD MEM pc_in_mux";
+        assert alu_res_mux = '0'
+            report "LD MEM alu_res_mux";
+        assert data_rd = '1'
+            report "LD MEM data_rd";
+        assert data_wr = '0'
+            report "LD MEM data_wr";
+
+        -- test WB stage
+        wait until clk = '1';
+        instr <= NOP_instr;
+        wait until clk = '0';
+        assert reg_a_we = '1'
+            report "LD WB reg_a_we";
+        assert wb_mux = '1'
+            report "LD WB wb_mux";
+
+
+        -- STI_OP
+
+        addr_a := "00001";
+        addr_b := "00001";
+        addr_c := "00010";
+        imm12  := "100100100100";
+        imm17  := addr_c & imm12;
+        instr <= STI_OP & addr_a & addr_b & addr_c & imm12;
+
+        -- test OF stage
+        wait until clk = '1';
+        instr <= NOP_instr;
+        wait until clk = '0';
+        assert reg_b_adr = addr_b
+            report "STI OF addr_b";
+        assert reg_c_adr = addr_a
+            report "STI OF addr_c";
+        assert imm_out   = imm17
+            report "STI OF imm17";
+
+
+        -- test EX stage
+        wait until clk = '1';
+        instr <= NOP_instr;
+        wait until clk = '0';
+        assert alu_op = STI_OP
+            report "STI EX alu_op";
+        assert alu_b_mux = '0'
+            report "STI EX alu_b_mux";
+        assert alu_c_mux = '1'
+            report "STI EX alu_c_mux";
+
+        -- test MEM stage
+        wait until clk = '1';
+        instr <= NOP_instr;
+        wait until clk = '0';
+        assert pc_in_mux = '0'
+            report "STI MEM pc_in_mux";
+        assert alu_res_mux = '0'
+            report "STI MEM alu_res_mux";
+        assert data_rd = '0'
+            report "STI MEM data_rd";
+        assert data_wr = '1'
+            report "STI MEM data_wr";
+
+        -- test WB stage
+        wait until clk = '1';
+        instr <= NOP_instr;
+        wait until clk = '0';
+        assert reg_a_we = '0'
+            report "STI WB reg_a_we";
+        assert wb_mux = '0'
+            report "STI WB wb_mux";
+
+        --------- END STIMULUS -----------
         wait;
     end process stimulus;
 
