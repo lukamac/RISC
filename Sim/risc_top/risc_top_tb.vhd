@@ -180,33 +180,98 @@ begin
 
         wait until clk = '0';
 
-        instr_data <= NOP_instr;
+        op := LD_OP;
+        addr_a := "00101";
+        addr_b := "00000"; -- 4
+        imm17  := std_logic_vector(to_unsigned(16, imm17'length));
+
+        instr_data <= op & addr_a & addr_b & imm17;
 
         assert data_addr = std_logic_vector(to_unsigned(7, data_addr'length))
         report "Wrong result from ORI_OP.";
 
         wait until clk = '1';
+        -- LD_OP entered OF stage
         -- SHCI_OP entered EX stage
         -- SHLI_OP entered MEM stage
         -- ORI_OP entered WB stage
 
         wait until clk = '0';
 
-        instr_data <= NOP_instr;
+        op := STI_OP;
+        addr_a := "00001"; -- 2
+        addr_b := "00000"; -- 4
+        imm17  := '0' & X"1234";
+
+        instr_data <= op & addr_a & addr_b & imm17;
 
         assert data_addr = X"00000020"
         report "Wrong result from SHLI_OP.";
 
         wait until clk = '1';
+        -- STI_OP entered OF stage
+        -- LD_OP entered EX stage
         -- SHCI_OP entered MEM stage
         -- SHLI_OP entered WB stage
 
         wait until clk = '0';
 
-        instr_data <= NOP_instr;
+        op := LAI_OP;
+        addr_a := "00110";
+        addr_b := "00000";
+        imm17  := '1' & X"1234";
+
+        instr_data <= op & addr_a & addr_b & imm17;
 
         assert data_addr = X"80000000"
         report "Wrong result from SHCI_OP.";
+
+        wait until clk = '1';
+        -- LAI_OP  entered OF  stage
+        -- STI_OP  entered EX  stage
+        -- LD_OP   entered MEM stage
+        -- SHCI_OP entered WB  stage
+
+        wait until clk = '0';
+
+        data_in <= X"12345678";
+        instr_data <= NOP_instr;
+
+        assert data_addr = X"00000014"
+        report "Wrong address from LD_OP.";
+        assert data_rd = '1'
+        report "Data read not set in LD_OP.";
+
+        wait until clk = '1';
+        -- LAI_OP  entered EX  stage
+        -- STI_OP  entered MEM stage
+        -- LD_OP   entered WB  stage
+
+        wait until clk = '0';
+
+        instr_data <= NOP_instr;
+
+        assert data_addr = X"00001234"
+        report "Wrong address from STI_OP.";
+        assert data_wr = '1'
+        report "Data write not set in STI_OP.";
+        assert data_out = X"00000002"
+        report "Wrong data output from STI_OP.";
+
+        wait until clk = '1';
+        -- LAI_OP  entered MEM stage
+        -- STI_OP  entered WB  stage
+
+        wait until clk = '0';
+
+        instr_data <= NOP_instr;
+
+        assert data_addr = X"FFFF1234"
+        report "Wrong address from LAI_OP.";
+        assert data_rd = '0'
+        report "Data read not cleared in LAI_OP.";
+        assert data_wr = '0'
+        report "Data write not cleared in LAI_OP.";
 
         --------- END STIMULUS ------------
         wait;
