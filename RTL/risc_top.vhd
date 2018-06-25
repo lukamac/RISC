@@ -6,21 +6,21 @@ use work.RISC_const_and_types.all;
 
 entity risc_top is
     port(
-            clk         : in std_logic;
-            rst         : in std_logic;
-        
-            -- instruction memory interface
-            instr_addr  : out address_t;
-            instr_data  : in word_t;
-            wait_instr  : in std_logic;
-        
-            -- data memory interface
-            data_addr   : out address_t;
-            data_out    : out word_t;
-            data_in     : in word_t;
-            data_rd     : out std_logic;
-            data_wr     : out std_logic;
-            wait_data   : in std_logic
+       clk         : in std_logic;
+       rst         : in std_logic;
+       
+       -- instruction memory interface
+       instr_addr  : out address_t;
+       instr_data  : in word_t;
+       wait_instr  : in std_logic;
+       
+       -- data memory interface
+       data_addr   : out address_t;
+       data_out    : out word_t;
+       data_in     : in word_t;
+       data_rd     : out std_logic;
+       data_wr     : out std_logic;
+       wait_data   : in std_logic
     );
 
 end risc_top;
@@ -146,9 +146,9 @@ architecture rtl of risc_top is
             pc_inc_en : out std_logic;
         
             -- OF stage control signals
-            imm_out     : out immediate_t; -- immediate constant from instruction
-            reg_b_adr   : out reg_address_t; -- register b address
-            reg_c_adr   : out reg_address_t; -- register c address
+            imm_out     : out immediate_t; -- immediate constant
+            reg_b_adr   : out reg_address_t;
+            reg_c_adr   : out reg_address_t;
 
             -- EX stage control signals
             alu_b_mux, alu_c_mux : out std_logic;
@@ -204,95 +204,95 @@ architecture rtl of risc_top is
 begin
 
     if_inst: IF_stage port map(
-            clk => clk,
-            rst => rst,
-            instr_addr => instr_addr,
-            instr_data => instr_data,
-            b_in => mem_b_out,
+            clk            => clk,
+            rst            => rst,
+            instr_addr     => instr_addr,
+            instr_data     => instr_data,
+            b_in           => mem_b_out,
             ctrl_pc_in_mux => ctrl_pc_in_mux,
             ctrl_pc_inc_en => ctrl_pc_inc_en,
-            pc_out => if_pc_out,
-            ir_out => if_ir_out
+            pc_out         => if_pc_out,
+            ir_out         => if_ir_out
             );
             
     of_inst: OF_stage port map(
-            clk => clk,
-            rst => rst,
-            ctrl_imm => ctrl_17imm,
-            imm_out => of_32imm_out,
-            pc_in => if_pc_out,
-            pc_out => of_pc_out,
-            a => of_a_in,
-            b => of_b_out,
-            c => of_c_out,
-            ctrl_we => ctrl_reg_a_we,
+            clk        => clk,
+            rst        => rst,
+            ctrl_imm   => ctrl_17imm,
+            imm_out    => of_32imm_out,
+            pc_in      => if_pc_out,
+            pc_out     => of_pc_out,
+            a          => of_a_in,
+            b          => of_b_out,
+            c          => of_c_out,
+            ctrl_we    => ctrl_reg_a_we,
             ctrl_a_adr => ctrl_a_adr,
             ctrl_b_adr => ctrl_b_adr,
             ctrl_c_adr => ctrl_c_adr
             );
             
     ex_inst: EX_stage port map(
-            clk => clk,
-            rst => rst,
-            ctrl_op => ctrl_alu_op,
-            b_in => of_b_out,
-            pc_in => of_pc_out,
+            clk        => clk,
+            rst        => rst,
+            ctrl_op    => ctrl_alu_op,
+            b_in       => of_b_out,
+            pc_in      => of_pc_out,
             ctrl_alu_b => ctrl_alu_b_mux,
-            c => of_c_out,
-            imm => of_32imm_out,
+            c          => of_c_out,
+            imm        => of_32imm_out,
             ctrl_alu_c => ctrl_alu_c_mux,
-            status => ex_status,
-            pc_out => ex_pc_out,
-            b_out => ex_b_out,
-            alu_res => ex_alu_res,
-            mdr_out => ex_mdr_out
+            status     => ex_status,
+            pc_out     => ex_pc_out,
+            b_out      => ex_b_out,
+            alu_res    => ex_alu_res,
+            mdr_out    => ex_mdr_out
             );
             
     mem_inst: MEM_stage port map(
-            clk => clk,
-            rst => rst,
-            alu_res_in => ex_alu_res,
-            pc_in => ex_pc_out,
-            mdr_out => ex_mdr_out, 
-            data_in => data_in,
-            b_in => ex_b_out,
+            clk              => clk,
+            rst              => rst,
+            alu_res_in       => ex_alu_res,
+            pc_in            => ex_pc_out,
+            mdr_out          => ex_mdr_out,
+            data_in          => data_in,
+            b_in             => ex_b_out,
             ctrl_alu_res_mux => ctrl_alu_res_mux,
-            mem_addr => data_addr,
-            alu_res_out => mem_alu_res,
-            data_out => data_out,
-            mdr_in => wb_mdr_in,
-            pc_out => mem_b_out
+            mem_addr         => data_addr,
+            alu_res_out      => mem_alu_res,
+            data_out         => data_out,
+            mdr_in           => wb_mdr_in,
+            pc_out           => mem_b_out
             );
             
     wb_inst: WB_stage port map(
-            clk => clk,
-            rst => rst,
+            clk         => clk,
+            rst         => rst,
             ctrl_wb_mux => ctrl_wb_mux,
-            alu_res_in => mem_alu_res,
-            mdr_in => wb_mdr_in,
-            data_out => of_a_in
+            alu_res_in  => mem_alu_res,
+            mdr_in      => wb_mdr_in,
+            data_out    => of_a_in
             );
             
     ctrl_inst: controller port map(
-            rst => rst,
-            clk => clk,
-            instr => if_ir_out,
-            pc_in_mux => ctrl_pc_in_mux,
-            pc_inc_en => ctrl_pc_inc_en,
-            imm_out => ctrl_17imm,
-            reg_b_adr => ctrl_b_adr,
-            reg_c_adr => ctrl_c_adr,
-            alu_b_mux => ctrl_alu_b_mux, 
-            alu_c_mux => ctrl_alu_c_mux,
-            alu_op => ctrl_alu_op,
-            status => ex_status,
-            wait_data => wait_data,
-            wait_instr => wait_instr,
-            data_rd => data_rd,
-            data_wr => data_wr,
+            rst         => rst,
+            clk         => clk,
+            instr       => if_ir_out,
+            pc_in_mux   => ctrl_pc_in_mux,
+            pc_inc_en   => ctrl_pc_inc_en,
+            imm_out     => ctrl_17imm,
+            reg_b_adr   => ctrl_b_adr,
+            reg_c_adr   => ctrl_c_adr,
+            alu_b_mux   => ctrl_alu_b_mux,
+            alu_c_mux   => ctrl_alu_c_mux,
+            alu_op      => ctrl_alu_op,
+            status      => ex_status,
+            wait_data   => wait_data,
+            wait_instr  => wait_instr,
+            data_rd     => data_rd,
+            data_wr     => data_wr,
             alu_res_mux => ctrl_alu_res_mux,
-            reg_a_we => ctrl_reg_a_we,
-            reg_a_adr => ctrl_a_adr,
-            wb_mux => ctrl_wb_mux
+            reg_a_we    => ctrl_reg_a_we,
+            reg_a_adr   => ctrl_a_adr,
+            wb_mux      => ctrl_wb_mux
             );   
 end rtl;
