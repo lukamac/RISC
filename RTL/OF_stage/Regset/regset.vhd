@@ -20,7 +20,7 @@ end regset;
 
 architecture rtl of regset is
     type ram_type is array (31 downto 0) of word_t;
-    signal RAM : ram_type;
+    signal RAM : ram_type := (others => (others=>'0'));
 begin
 	
 	-- data input process
