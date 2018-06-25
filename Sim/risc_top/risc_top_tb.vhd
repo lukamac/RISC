@@ -92,18 +92,21 @@ begin
         instr_data <= op & addr_a & addr_b & imm17;
 
         wait until clk = '1';
+        -- ADDI_OP entered OF stage
         instr_data <= NOP_instr;
         wait until clk = '0';
         PC := PC + 4;
         assert instr_addr = std_logic_vector(to_unsigned(PC, instr_addr'length))
             report "PC is invalid";
         wait until clk = '1';
+        -- ADDI_OP entered EX stage
         instr_data <= NOP_instr;
         wait until clk = '0';
         PC := PC + 4;
         assert instr_addr = std_logic_vector(to_unsigned(PC, instr_addr'length))
             report "PC is invalid";
         wait until clk = '1';
+        -- ADDI_OP entered MEM stage
         instr_data <= NOP_instr;
         wait until clk = '0';
         PC := PC + 4;
@@ -113,6 +116,7 @@ begin
             report "ALU_res wrong";
 
         wait until clk = '1';
+        -- ADDI_OP entered WB stage
 
         --------- PIPELINE TEST -----------
         -- in reg(0) we have 4 and rest is 0
@@ -127,6 +131,7 @@ begin
         instr_data <= op & addr_a & addr_b & imm17;
 
         wait until clk = '1';
+        -- SUBI_OP entered OF stage
 
         wait until clk = '0';
 
@@ -138,6 +143,8 @@ begin
         instr_data <= op & addr_a & addr_b & imm17;
 
         wait until clk = '1';
+        -- ORI_OP entered OF stage
+        -- SUBI_OP entered EX stage
 
         wait until clk = '0';
 
@@ -149,6 +156,9 @@ begin
         instr_data <= op & addr_a & addr_b & imm17;
 
         wait until clk = '1';
+        -- SHLI_OP entered OF stage
+        -- ORI_OP entered EX stage
+        -- SUBI_OP entered MEM stage
 
         wait until clk = '0';
 
@@ -163,15 +173,22 @@ begin
         report "Wrong result from SUBI_OP.";
 
         wait until clk = '1';
+        -- SHCI_OP entered OF stage
+        -- SHLI_OP entered EX stage
+        -- ORI_OP entered MEM stage
+        -- SUBI_OP entered WB stage
 
         wait until clk = '0';
 
         instr_data <= NOP_instr;
 
-        assert data_addr = X"00000007"
+        assert data_addr = std_logic_vector(to_unsigned(7, data_addr'length))
         report "Wrong result from ORI_OP.";
 
         wait until clk = '1';
+        -- SHCI_OP entered EX stage
+        -- SHLI_OP entered MEM stage
+        -- ORI_OP entered WB stage
 
         wait until clk = '0';
 
@@ -181,6 +198,8 @@ begin
         report "Wrong result from SHLI_OP.";
 
         wait until clk = '1';
+        -- SHCI_OP entered MEM stage
+        -- SHLI_OP entered WB stage
 
         wait until clk = '0';
 
