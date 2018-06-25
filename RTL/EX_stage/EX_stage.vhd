@@ -46,7 +46,6 @@ architecture rtl of EX_stage is
         );
     end component alu;
 
-    signal ctrl_op_reg, ctrl_op_next : op_t;
     signal imm_reg, b_reg, c_reg, pc_reg : word_t;
     signal imm_next, b_next, c_next, pc_next : word_t;
     signal alu_b, alu_c : word_t;
@@ -58,13 +57,11 @@ begin
     begin
         if (rising_edge(clk)) then
             if (rst = '1') then
-                ctrl_op_reg <= (others => '0');
                 imm_reg     <= (others => '0');
                 b_reg       <= (others => '0');
                 c_reg       <= (others => '0');
                 pc_reg      <= (others => '0');
             else
-                ctrl_op_reg <= ctrl_op_next;
                 imm_reg     <= imm_next;
                 b_reg       <= b_next;
                 c_reg       <= c_next;
@@ -72,8 +69,6 @@ begin
             end if;
         end if;
     end process;
-    ctrl_op_next <= ctrl_op when ctrl_wait_mem = '0' else
-                    ctrl_op_reg;
     imm_next <= imm when ctrl_wait_mem = '0' else
                 imm_reg;
     b_next <= b_in when ctrl_wait_mem = '0' else
@@ -84,7 +79,7 @@ begin
                pc_reg;
     
 
-    alu_inst : component alu port map (op => ctrl_op_reg,
+    alu_inst : component alu port map (op => ctrl_op,
                                        b  => alu_b,
                                        c  => alu_c,
                                        a  => a
