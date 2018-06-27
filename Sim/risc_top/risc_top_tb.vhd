@@ -47,7 +47,7 @@ architecture behavioural of risc_top_tb is
     signal data_wr   : std_logic;
     signal wait_data : std_logic;
 
-    constant t_clk : time := 20 ns;
+    constant t_clk : time := 10 ns;
 
 begin
 
@@ -82,9 +82,10 @@ begin
         wait_data  <= '0';
         wait until rst = '1';
         PC := 0;
+        wait until rst = '0';
         assert instr_addr = std_logic_vector(to_unsigned(PC, instr_addr'length))
             report "instr_addr not zero after rst";
-        wait until rst = '0';
+
         op := ADDI_OP;
         addr_a := "00000";
         addr_b := "00001";
@@ -93,22 +94,22 @@ begin
 
         wait until clk = '1';
         -- ADDI_OP entered OF stage
-        instr_data <= NOP_instr;
         wait until clk = '0';
+        instr_data <= NOP_instr;
         PC := PC + 4;
         assert instr_addr = std_logic_vector(to_unsigned(PC, instr_addr'length))
             report "PC is invalid";
         wait until clk = '1';
         -- ADDI_OP entered EX stage
-        instr_data <= NOP_instr;
         wait until clk = '0';
+        instr_data <= NOP_instr;
         PC := PC + 4;
         assert instr_addr = std_logic_vector(to_unsigned(PC, instr_addr'length))
             report "PC is invalid";
         wait until clk = '1';
         -- ADDI_OP entered MEM stage
-        instr_data <= NOP_instr;
         wait until clk = '0';
+        instr_data <= NOP_instr;
         PC := PC + 4;
         assert instr_addr = std_logic_vector(to_unsigned(PC, instr_addr'length))
             report "PC is invalid";

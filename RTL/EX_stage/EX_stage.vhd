@@ -50,6 +50,7 @@ architecture rtl of EX_stage is
     signal imm_next, b_next, c_next, pc_next : word_t;
     signal alu_b, alu_c : word_t;
     signal a : word_t;
+    signal s_flag, z_flag : std_logic;
 
 begin
 
@@ -85,16 +86,19 @@ begin
                                        a  => a
                                       );
 
-    set_status: process(a) is
+    set_flags: process(a) is
         constant zero_word : word_t := (others => '0');
     begin
         if (a = zero_word) then
-            status(Z) <= '1';
+            z_flag <= '1';
         else
-            status(Z) <= '0';
+            z_flag <= '0';
         end if;
-        status(S) <= a(a'high);
-    end process set_status;
+        s_flag <= a(a'high);
+    end process set_flags;
+
+    status(S) <= s_flag;
+    status(Z) <= z_flag;
 
     alu_b <= b_reg when ctrl_alu_b = '0' else
              pc_in;
