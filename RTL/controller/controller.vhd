@@ -236,7 +236,9 @@ begin
                 reg_a_we <= '0';
             when BRL_OP =>
                 reg_a_we <= '1';
-            when LA_OP | LD_OP | LDI_OP =>
+            when LA_OP | LAI_OP =>
+            	reg_a_we <= '1';
+            when LD_OP | LDI_OP =>
                 reg_a_we <= '1';
                 wb_mux   <= '1';
             when ST_OP | STI_OP =>

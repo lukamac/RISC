@@ -30,11 +30,11 @@ architecture behavioural of simple_instr_mem is
             LAI_OP  & "00001" & "00000" & "00000000000000101",
             NOP_OP  & "00000" & "00000" & "00000000000000000",
             NOP_OP  & "00000" & "00000" & "00000000000000000",
+            NOP_OP  & "00000" & "00000" & "00000000000000000",
+            NOP_OP  & "00000" & "00000" & "00000000000000000",
+            NOP_OP  & "00000" & "00000" & "00000000000000000",
             STI_OP  & "00000" & "00000" & "00000000000000000",
             STI_OP  & "00001" & "00000" & "00000000000000000",
-            ADDI_OP & "00000" & "00000" & "00000000000000000",
-            ADDI_OP & "00000" & "00000" & "00000000000000000",
-            NOP_OP  & "00000" & "00000" & "00000000000000000",
             NOP_OP  & "00000" & "00000" & "00000000000000000",
             NOP_OP  & "00000" & "00000" & "00000000000000000",
             NOP_OP  & "00000" & "00000" & "00000000000000000",
@@ -93,7 +93,7 @@ begin
     process (clk) is
     begin
         if (rising_edge(clk)) then
-            instr_data <= bootloader(to_integer(unsigned(instr_addr)));
+            instr_data <= bootloader(to_integer(unsigned(instr_addr(5 downto 2))));
         end if;
     end process;
 
