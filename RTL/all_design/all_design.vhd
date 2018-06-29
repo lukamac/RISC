@@ -10,6 +10,8 @@ entity all_design is
 		clk : in std_logic;
 		rst : in std_logic;
 		led : out std_logic_vector(3 downto 0);
+		rx	: in std_logic;
+		tx	: out std_logic;
 		rgb : out std_logic_vector(1 downto 0);
 		btn : in std_logic
 		 );
@@ -70,6 +72,27 @@ architecture rtl of all_design is
 	    );
 	end component simple_data_mem;
 	
+	component uart_mem is
+		generic(CLK_FREQ : natural := 125000000);
+	    port
+	    (
+	    	clk   		: in std_logic;
+	        rst 		: in std_logic;
+	
+	        addr 		: in address_t;
+	        
+	        rd			: in std_logic;
+	        wr			: in std_logic;
+	        wait_btn	: in std_logic;
+	
+	        data_wait 	: out std_logic;
+	        data_in 	: in word_t;
+	        data_out    : out word_t;
+	        rx			: in std_logic;
+	        tx			: out std_logic
+	    );
+	end component uart_mem;
+	
 	signal instr_addr, data_addr : address_t;
 	signal instr_data, data_in, data_out : word_t;
 	signal wait_instr, wait_data, data_rd, data_wr : std_logic;
@@ -97,19 +120,39 @@ begin
 		instr_wait => wait_instr,
 		instr_data => instr_data
 	);
-	data: simple_data_mem port map(
-		clk => clk,
-		rst => rst,
-		addr => data_addr,
-		rd => data_rd,
-		wr => data_wr,
-		data_wait => wait_data,
-		data_in => data_out,
-		data_out => data_in,
-		led => led	
-	);
+--	data: simple_data_mem port map(
+--		clk => clk,
+--		rst => rst,
+--		addr => data_addr,
+--		rd => data_rd,
+--		wr => data_wr,
+--		data_wait => wait_data,
+--		data_in => data_out,
+--		data_out => data_in,
+--		led => led	
+--	);
+
+	data: uart_mem 
+		generic map(
+			CLK_FREQ => 125000000
+		)
+		port map(
+			clk => clk,
+			rst => rst,
+			addr => data_addr,
+			rd => data_rd,
+			wr => data_wr,
+			wait_btn => wait_instr,
+			data_wait => wait_data,
+			data_in => data_out,
+			data_out => data_in,
+			rx => rx,
+			tx => tx
+		);
 	
 	rgb(0) <= rst;
 	rgb(1) <= wait_instr;
+	
+	led <= data_addr(3 downto 0);
 	
 end rtl;

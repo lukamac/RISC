@@ -11,6 +11,8 @@ architecture Behavioral of all_design_tb is
 		clk : in std_logic;
 		rst : in std_logic;
 		led : out std_logic_vector(3 downto 0);
+		rx	: in std_logic;
+		tx	: out std_logic;
 		rgb : out std_logic_vector(1 downto 0);
 		btn : in std_logic
 		 );
@@ -20,6 +22,7 @@ architecture Behavioral of all_design_tb is
 	signal led : std_logic_vector(3 downto 0);
 	signal rgb : std_logic_vector(1 downto 0);
 	signal btn : std_logic := '0';
+	signal rx, tx : std_logic :='0';
 	
 	constant t_clk : time := 8 ns;
 	
@@ -29,13 +32,15 @@ begin
 		clk => clk,
 		rst => rst,
 		led => led,
+		rx => rx,
+		tx => tx,
 		rgb => rgb,
 		btn => btn
 	);
 	
 	rst <= '1', '0' after 10 * t_clk;
 	clk <= not clk after t_clk/2;
-	btn <= not btn after 400 ns;
+	btn <= not btn after 5 ms;
 
 	stimulus: process is
 	begin
