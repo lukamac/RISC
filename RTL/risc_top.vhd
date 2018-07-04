@@ -265,12 +265,12 @@ begin
             data_in          => data_in,
             b_in             => ex_b_out,
             ctrl_alu_res_mux => ctrl_alu_res_mux,
-            ctrl_wait_mem => ctrl_wait_mem,
-            mem_addr => data_addr,
-            alu_res_out => mem_alu_res,
-            data_out => data_out,
-            mdr_in => wb_mdr_in,
-            b_out => mem_b_out
+            ctrl_wait_mem    => ctrl_wait_mem,
+            mem_addr         => data_addr,
+            alu_res_out      => mem_alu_res,
+            data_out         => data_out,
+            mdr_in           => wb_mdr_in,
+            b_out            => mem_b_out
             );
             
     wb_inst: WB_stage port map(

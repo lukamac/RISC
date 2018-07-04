@@ -22,8 +22,11 @@ end entity WB_stage;
 
 
 architecture RTL of WB_stage is
+
     signal mdr_in_reg  , mdr_in_next  : word_t;
     signal alu_res_reg , alu_res_next : word_t;
+    signal reg_en                     : std_logic;
+
 begin
     process (clk) is
     begin
@@ -31,17 +34,18 @@ begin
             if (rst = '1') then
                 mdr_in_reg  <= (others => '0');
                 alu_res_reg <= (others => '0');
-            else
+            elsif (reg_en = '1') then
                 mdr_in_reg  <= mdr_in_next;
                 alu_res_reg <= alu_res_next;
             end if;
         end if;
     end process;
 
-    mdr_in_next  <= mdr_in when ctrl_wait_mem = '0' else
-                    mdr_in_reg;
-    alu_res_next <= alu_res_in when ctrl_wait_mem = '0' else
-                    alu_res_reg;
+    mdr_in_next  <= mdr_in;
+    alu_res_next <= alu_res_in;
+
+    reg_en <= not ctrl_wait_mem;
+
 
     data_out <= alu_res_reg when ctrl_wb_mux = '0' else
                 mdr_in_reg;

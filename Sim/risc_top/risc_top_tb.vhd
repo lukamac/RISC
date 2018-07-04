@@ -51,22 +51,24 @@ architecture behavioural of risc_top_tb is
 
 begin
 
-    uut: component risc_top port map (clk => clk,
-                                      rst => rst,
-                                      instr_addr => instr_addr,
-                                      instr_data => instr_data,
-                                      wait_instr => wait_instr,
-                                      data_addr => data_addr,
-                                      data_out => data_out,
-                                      data_in => data_in,
-                                      data_rd => data_rd,
-                                      data_wr => data_wr,
-                                      wait_data => wait_data
-                                     );
+    uut: component risc_top
+        port map (
+            clk        => clk,
+            rst        => rst,
+            instr_addr => instr_addr,
+            instr_data => instr_data,
+            wait_instr => wait_instr,
+            data_addr  => data_addr,
+            data_out   => data_out,
+            data_in    => data_in,
+            data_rd    => data_rd,
+            data_wr    => data_wr,
+            wait_data  => wait_data
+        );
 
     clk <= not clk after t_clk/2;
 
-    rst <= '1', '0' after 100 ns;
+    rst <= '1', '0' after t_clk * 10;
 
     stimulus: process is
         variable op : op_t;
@@ -93,30 +95,45 @@ begin
         instr_data <= op & addr_a & addr_b & imm17;
 
         wait until clk = '1';
+
         -- ADDI_OP entered OF stage
+
         wait until clk = '0';
+
         instr_data <= NOP_instr;
         PC := PC + 4;
+
+        wait until clk = '1';
+
         assert instr_addr = std_logic_vector(to_unsigned(PC, instr_addr'length))
             report "PC is invalid";
-        wait until clk = '1';
+
         -- ADDI_OP entered EX stage
+
         wait until clk = '0';
+
         instr_data <= NOP_instr;
         PC := PC + 4;
+
+        wait until clk = '1';
+
         assert instr_addr = std_logic_vector(to_unsigned(PC, instr_addr'length))
             report "PC is invalid";
-        wait until clk = '1';
+
         -- ADDI_OP entered MEM stage
+
         wait until clk = '0';
+
         instr_data <= NOP_instr;
         PC := PC + 4;
+
+        wait until clk = '1';
+
         assert instr_addr = std_logic_vector(to_unsigned(PC, instr_addr'length))
             report "PC is invalid";
         assert data_addr = std_logic_vector(to_unsigned(4, data_addr'length))
             report "ALU_res wrong";
 
-        wait until clk = '1';
         -- ADDI_OP entered WB stage
 
         --------- PIPELINE TEST -----------
@@ -132,6 +149,7 @@ begin
         instr_data <= op & addr_a & addr_b & imm17;
 
         wait until clk = '1';
+
         -- SUBI_OP entered OF stage
 
         wait until clk = '0';
@@ -144,6 +162,7 @@ begin
         instr_data <= op & addr_a & addr_b & imm17;
 
         wait until clk = '1';
+
         -- ORI_OP entered OF stage
         -- SUBI_OP entered EX stage
 
@@ -157,6 +176,7 @@ begin
         instr_data <= op & addr_a & addr_b & imm17;
 
         wait until clk = '1';
+
         -- SHLI_OP entered OF stage
         -- ORI_OP entered EX stage
         -- SUBI_OP entered MEM stage
@@ -170,10 +190,11 @@ begin
 
         instr_data <= op & addr_a & addr_b & imm17;
 
+        wait until clk = '1';
+
         assert data_addr = std_logic_vector(to_unsigned(2, data_addr'length))
         report "Wrong result from SUBI_OP.";
 
-        wait until clk = '1';
         -- SHCI_OP entered OF stage
         -- SHLI_OP entered EX stage
         -- ORI_OP entered MEM stage
@@ -188,10 +209,11 @@ begin
 
         instr_data <= op & addr_a & addr_b & imm17;
 
+        wait until clk = '1';
+
         assert data_addr = std_logic_vector(to_unsigned(7, data_addr'length))
         report "Wrong result from ORI_OP.";
 
-        wait until clk = '1';
         -- LD_OP entered OF stage
         -- SHCI_OP entered EX stage
         -- SHLI_OP entered MEM stage
@@ -206,10 +228,11 @@ begin
 
         instr_data <= op & addr_a & addr_b & imm17;
 
+        wait until clk = '1';
+
         assert data_addr = X"00000020"
         report "Wrong result from SHLI_OP.";
 
-        wait until clk = '1';
         -- STI_OP entered OF stage
         -- LD_OP entered EX stage
         -- SHCI_OP entered MEM stage
@@ -224,10 +247,11 @@ begin
 
         instr_data <= op & addr_a & addr_b & imm17;
 
+        wait until clk = '1';
+
         assert data_addr = X"80000000"
         report "Wrong result from SHCI_OP.";
 
-        wait until clk = '1';
         -- LAI_OP  entered OF  stage
         -- STI_OP  entered EX  stage
         -- LD_OP   entered MEM stage
@@ -238,12 +262,13 @@ begin
         data_in <= X"12345678";
         instr_data <= NOP_instr;
 
+        wait until clk = '1';
+
         assert data_addr = X"00000014"
         report "Wrong address from LD_OP.";
         assert data_rd = '1'
         report "Data read not set in LD_OP.";
 
-        wait until clk = '1';
         -- LAI_OP  entered EX  stage
         -- STI_OP  entered MEM stage
         -- LD_OP   entered WB  stage
@@ -252,6 +277,8 @@ begin
 
         instr_data <= NOP_instr;
 
+        wait until clk = '1';
+
         assert data_addr = X"00001234"
         report "Wrong address from STI_OP.";
         assert data_wr = '1'
@@ -259,13 +286,14 @@ begin
         assert data_out = X"00000002"
         report "Wrong data output from STI_OP.";
 
-        wait until clk = '1';
         -- LAI_OP  entered MEM stage
         -- STI_OP  entered WB  stage
 
         wait until clk = '0';
 
         instr_data <= NOP_instr;
+
+        wait until clk = '1';
 
         assert data_addr = X"FFFF1234"
         report "Wrong address from LAI_OP.";

@@ -35,6 +35,7 @@ architecture rtl of IF_stage is
     signal pc_reg   : address_t := (others => '0'); -- Program counter register
     signal pc_add_4 : unsigned(address_t'range)  := (others => '0');
     signal pc_next  : address_t := (others => '0'); -- Next value for program counter register
+    signal pc_reg_en : std_logic;
 
 begin
 
@@ -44,15 +45,16 @@ begin
         if (rising_edge(clk)) then
             if(rst = '1') then
                 pc_reg <= (others => '0');
-            else
+            elsif(pc_reg_en = '1') then
                 pc_reg <= pc_next;
             end if;
         end if;
     end process pc_reg_proc;
 
+    pc_reg_en <= not ctrl_wait_mem;
+
     -- PC incrementer
-    pc_add_4 <= unsigned(pc_reg) + 4 when ctrl_wait_mem = '0' else
-                unsigned(pc_reg);
+    pc_add_4 <= unsigned(pc_reg) + 4;
 
     -- PC input mux
     with ctrl_pc_in_mux select

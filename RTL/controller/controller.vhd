@@ -44,9 +44,12 @@ end entity controller;
 architecture RTL of controller is
 
     type instr_array is array (natural range <>) of word_t;
-    signal past_instr_reg, past_instr_next : instr_array(3 downto 0);
-    signal status_reg : status_t := (others => '0');
-    signal branch : std_logic;
+    signal instr_reg, instr_next : instr_array(3 downto 0);
+    signal status_reg, status_next : status_t := (others => '0');
+    signal branch     : std_logic;
+    signal reg_ce     : std_logic;
+    signal wait_mem_i : std_logic;
+    signal rst_or_branch : std_logic;
 
     constant OF_stage  : natural := 0;
     constant EX_stage  : natural := 1;
@@ -56,45 +59,58 @@ architecture RTL of controller is
 begin
 
     process (clk) is
-        constant init_word : word_t := (others => '0');
     begin
         if (rising_edge(clk)) then
-            if (rst = '1') then
-                past_instr_reg <= (others => (others => '0'));
-                status_reg <= (others => '0');
-            else
-                past_instr_reg <= past_instr_next;
-                status_reg <= status;
+            if (rst_or_branch = '1') then
+                instr_reg(OF_stage)  <= (others => '0');
+                instr_reg(EX_stage)  <= (others => '0');
+                instr_reg(MEM_stage) <= (others => '0');
+            elsif (reg_ce = '1') then
+                instr_reg(OF_stage)  <= instr_next(OF_stage);
+                instr_reg(EX_stage)  <= instr_next(EX_stage);
+                instr_reg(MEM_stage) <= instr_next(MEM_stage);
             end if;
         end if;
     end process;
 
-    past_instr_next(OF_stage)  <= past_instr_reg(OF_stage) when wait_data = '1' or wait_instr = '1' else
-                                  instr when branch = '0' else
-                                  (others => '0');
-    past_instr_next(EX_stage)  <= past_instr_reg(EX_stage) when wait_data = '1' or wait_instr = '1' else
-                                  past_instr_reg(OF_stage) when branch = '0' else
-                                  (others => '0');
-    past_instr_next(MEM_stage) <= past_instr_reg(MEM_stage) when wait_data = '1' or wait_instr = '1' else
-                                  past_instr_reg(EX_stage) when branch = '0' else
-                                  (others => '0');
-    past_instr_next(WB_stage)  <= past_instr_reg(WB_stage) when wait_data = '1' or wait_instr = '1' else
-                                  past_instr_reg(MEM_stage);
-
-
-    wait_mem  <= '1' when wait_data = '1' or wait_instr = '1' else
-                 '0';
-
-    OF_st: process(past_instr_reg(OF_stage)) is
-        alias op    is past_instr_reg(OF_stage)(31 downto 27);
-        alias a_adr is past_instr_reg(OF_stage)(26 downto 22);
-        alias b_adr is past_instr_reg(OF_stage)(21 downto 17);
-        alias c_adr is past_instr_reg(OF_stage)(16 downto 12);
-        alias imm   is past_instr_reg(OF_stage)(16 downto 0);
+    process (clk) is
     begin
-        imm_out       <= imm;
-        reg_b_adr     <= b_adr;
-        reg_c_adr     <= c_adr;
+        if (rising_edge(clk)) then
+            if (rst = '1') then
+                instr_reg(WB_stage) <= (others => '0');
+                status_reg          <= (others => '0');
+            elsif (reg_ce = '1') then
+                instr_reg(WB_stage) <= instr_next(WB_stage);
+                status_reg          <= status_next;
+            end if;
+        end if;
+    end process;
+
+    instr_next(OF_stage)  <= instr;
+    instr_next(EX_stage)  <= instr_reg(OF_stage);
+    instr_next(MEM_stage) <= instr_reg(EX_stage);
+    instr_next(WB_stage)  <= instr_reg(MEM_stage);
+
+    status_next <= status;
+
+
+    rst_or_branch <= '1' when rst = '1' or branch = '1' else
+                     '0';
+    wait_mem_i <= '1' when wait_data = '1' or wait_instr = '1' else
+                  '0';
+    reg_ce     <= not wait_mem_i;
+    wait_mem   <= wait_mem_i;
+
+    OF_st: process(instr_reg(OF_stage)) is
+        alias op    is instr_reg(OF_stage)(31 downto 27);
+        alias a_adr is instr_reg(OF_stage)(26 downto 22);
+        alias b_adr is instr_reg(OF_stage)(21 downto 17);
+        alias c_adr is instr_reg(OF_stage)(16 downto 12);
+        alias imm   is instr_reg(OF_stage)(16 downto 0);
+    begin
+        imm_out   <= imm;
+        reg_b_adr <= b_adr;
+        reg_c_adr <= c_adr;
         
         case op is
             when ST_OP | STI_OP =>
@@ -105,10 +121,10 @@ begin
     end process OF_st;
     
 
-    EX: process (past_instr_reg(EX_stage)) is
-        alias op is past_instr_reg(EX_stage)(31 downto 27);
+    EX: process (instr_reg(EX_stage)) is
+        alias op is instr_reg(EX_stage)(31 downto 27);
     begin
-        alu_op <= op;
+        alu_op    <= op;
         alu_b_mux <= '0';
         alu_c_mux <= '0';
 
@@ -120,16 +136,15 @@ begin
                 alu_c_mux <= '1';
             when LA_OP | LD_OP | ST_OP =>
                 alu_c_mux <= '1';
-                alu_op <= ADDI_OP;
             when others =>
                 null;
         end case;
     end process EX;
 
 
-    MEM: process (past_instr_reg(MEM_stage), status_reg) is
-        alias op is past_instr_reg(MEM_stage)(31 downto 27);
-        alias condition is past_instr_reg(MEM_stage)(2 downto 0);
+    MEM: process (instr_reg(MEM_stage), status_reg) is
+        alias op        is instr_reg(MEM_stage)(31 downto 27);
+        alias condition is instr_reg(MEM_stage)(2 downto 0);
     begin
         data_rd     <= '0';
         data_wr     <= '0';
@@ -216,9 +231,9 @@ begin
     pc_in_mux <= branch;
 
 
-    WB: process (past_instr_reg(WB_stage)) is
-        alias op     is past_instr_reg(WB_stage)(31 downto 27);
-        alias a_addr is past_instr_reg(WB_stage)(26 downto 22);
+    WB: process (instr_reg(WB_stage)) is
+        alias op     is instr_reg(WB_stage)(31 downto 27);
+        alias a_addr is instr_reg(WB_stage)(26 downto 22);
     begin
         wb_mux    <= '0';
         reg_a_we  <= '0';

@@ -22,14 +22,16 @@ entity EX_stage is
         ctrl_alu_b  : in std_logic;
 
         -- ALU input C signals
-        c, imm      : in word_t;
-        ctrl_alu_c  : in std_logic;
+        c          : in word_t;
+        imm        : in word_t;
+        ctrl_alu_c : in std_logic;
 
-        status           : out status_t;
-        pc_out           : out address_t;
-        b_out            : out word_t;
-        alu_res, mdr_out : out word_t;
-        ctrl_wait_mem    : in std_logic
+        status        : out status_t;
+        pc_out        : out address_t;
+        b_out         : out word_t;
+        alu_res       : out word_t;
+        mdr_out       : out word_t;
+        ctrl_wait_mem : in std_logic
     );
 end entity EX_stage;
 
@@ -46,11 +48,12 @@ architecture rtl of EX_stage is
         );
     end component alu;
 
-    signal imm_reg, b_reg, c_reg, pc_reg : word_t;
+    signal imm_reg, b_reg, c_reg, pc_reg     : word_t;
     signal imm_next, b_next, c_next, pc_next : word_t;
-    signal alu_b, alu_c : word_t;
-    signal a : word_t;
-    signal s_flag, z_flag : std_logic;
+    signal alu_b, alu_c                      : word_t;
+    signal a                                 : word_t;
+    signal s_flag, z_flag                    : std_logic;
+    signal reg_en                            : std_logic;
 
 begin
 
@@ -58,44 +61,84 @@ begin
     begin
         if (rising_edge(clk)) then
             if (rst = '1') then
-                imm_reg     <= (others => '0');
-                b_reg       <= (others => '0');
-                c_reg       <= (others => '0');
-                pc_reg      <= (others => '0');
-            else
-                imm_reg     <= imm_next;
-                b_reg       <= b_next;
-                c_reg       <= c_next;
-                pc_reg      <= pc_next;
+                imm_reg <= (others => '0');
+                b_reg   <= (others => '0');
+                c_reg   <= (others => '0');
+                pc_reg  <= (others => '0');
+            elsif (reg_en = '1') then
+                imm_reg <= imm_next;
+                b_reg   <= b_next;
+                c_reg   <= c_next;
+                pc_reg  <= pc_next;
             end if;
         end if;
     end process;
-    imm_next <= imm when ctrl_wait_mem = '0' else
-                imm_reg;
-    b_next <= b_in when ctrl_wait_mem = '0' else
-              b_reg;
-    c_next <= c when ctrl_wait_mem = '0' else
-              c_reg;
-    pc_next <= pc_in when ctrl_wait_mem = '0' else
-               pc_reg;
+
+    imm_next <= imm;
+    b_next   <= b_in;
+    c_next   <= c;
+    pc_next  <= pc_in;
+
+    reg_en <= not ctrl_wait_mem;
     
 
-    alu_inst : component alu port map (op => ctrl_op,
-                                       b  => alu_b,
-                                       c  => alu_c,
-                                       a  => a
-                                      );
+    alu_inst : component alu
+        port map (
+            op => ctrl_op,
+            b  => alu_b,
+            c  => alu_c,
+            a  => a
+        );
 
-    set_flags: process(a) is
-        constant zero_word : word_t := (others => '0');
+    --process(c_reg) is
+    --    constant zero_word : word_t := (others => '0');
+    --begin
+    --    if (c_reg = zero_word) then
+    --        z_flag <= '1';
+    --    else
+    --        z_flag <= '0';
+    --    end if;
+    --end process;
+
+    set_z: block is
+        signal first : std_logic_vector(WORD_SIZE/2 - 1 downto 0);
+        signal second : std_logic_vector(WORD_SIZE/4 - 1 downto 0);
+        signal third : std_logic_vector(WORD_SIZE/8 - 1 downto 0);
+        signal fourth : std_logic_vector(WORD_SIZE/16 - 1 downto 0);
     begin
-        if (a = zero_word) then
-            z_flag <= '1';
-        else
-            z_flag <= '0';
-        end if;
-        s_flag <= a(a'high);
-    end process set_flags;
+        first_stage: for I in 0 to WORD_SIZE/2 - 1
+        generate
+            first(I) <= '1' when c_reg(I*2) = '0' and c_reg(I*2+1) = '0' else
+                         '0';
+        end generate;
+
+        second_stage: for I in 0 to WORD_SIZE/4 - 1
+        generate
+            second(I) <= '1' when first(I*2) = '0' and first(I*2+1) = '0' else
+                         '0';
+        end generate;
+
+        third_stage: for I in 0 to WORD_SIZE/8 - 1
+        generate
+            third(I) <= '1' when second(I*2) = '0' and second(I*2+1) = '0' else
+                         '0';
+        end generate;
+
+        fourth_stage: for I in 0 to WORD_SIZE/16 - 1
+        generate
+            fourth(I) <= '1' when third(I*2) = '0' and third(I*2+1) = '0' else
+                         '0';
+        end generate;
+
+        fifth_stage: for I in 0 to WORD_SIZE/32 - 1
+        generate
+            z_flag <= '1' when fourth(I*2) = '0' and fourth(I*2+1) = '0' else
+                         '0';
+        end generate;
+
+    end block set_z;
+
+    s_flag <= c_reg(c_reg'high);
 
     status(S) <= s_flag;
     status(Z) <= z_flag;

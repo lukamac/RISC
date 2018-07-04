@@ -54,7 +54,8 @@ begin
     begin
         case (op) is
             when ADD_OP | ADDI_OP |
-                 SUB_OP | SUBI_OP =>
+                 SUB_OP | SUBI_OP |
+                 LA_OP  | LD_OP   | ST_OP =>
                 a <= std_logic_vector(adder_res);
             when NEG_OP =>
                 a <= neg_c;

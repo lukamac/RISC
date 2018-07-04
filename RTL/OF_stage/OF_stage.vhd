@@ -35,8 +35,6 @@ end entity OF_stage;
 
 architecture rtl of OF_stage is
 
-    signal pc_reg, pc_next : word_t := (others => '0');
-
     component regset is
         port (
                 clk : in std_logic; -- Clock
@@ -57,38 +55,43 @@ architecture rtl of OF_stage is
               );
 	end component sign_extension;	
 
+    signal pc_reg, pc_next : word_t;
+    signal reg_en : std_logic;
+
 begin
 
     regs: regset port map (
                 clk => clk,
-                we => ctrl_we,
-                a => ctrl_a_adr,
-                b => ctrl_b_adr,
-                c => ctrl_c_adr,
+                we  => ctrl_we,
+                a   => ctrl_a_adr,
+                b   => ctrl_b_adr,
+                c   => ctrl_c_adr,
                 dob => b,
                 doc => c,
                 dia => a
     );
     
     extend: sign_extension port map (
-                d_in => ctrl_imm,
+                d_in  => ctrl_imm,
                 d_out => imm_out
     );
     
-    pc_next <= pc_in when ctrl_wait_mem = '0' else
-               pc_reg;
-           
     pc_buffer: process (clk) is
     begin
         if (rising_edge(clk)) then
             if (rst = '1') then
                 pc_reg <= (others => '0');
-            else
+            elsif (reg_en = '1') then
                 pc_reg <= pc_next;
             end if;
         end if;
     end process pc_buffer;
     
+    pc_next <= pc_in;
+
+    reg_en <= not ctrl_wait_mem;
+
+           
     pc_out <= pc_reg;
 
 end architecture rtl;

@@ -22,52 +22,54 @@ architecture beh of EX_stage_tb is
             b_in            : in word_t;
             pc_in           : in address_t;
             ctrl_alu_b      : in std_logic;
-            c, imm          : in word_t;
+            c               : in word_t;
+            imm             : in word_t;
             ctrl_alu_c      : in std_logic;
+            ctrl_wait_mem   : in std_logic;
 
             status          : out status_t;
             pc_out          : out address_t;
-                b_out           : out word_t;
-            alu_res, mdr_out    : out word_t
+            b_out           : out word_t;
+            alu_res         : out word_t;
+            mdr_out         : out word_t
         );
     end component EX_stage;
 
-    signal clk, rst : std_logic;
+    signal clk, rst : std_logic := '0';
     signal ctrl_op : op_t;
     signal imm, b_in, c, alu_res, mdr_out : word_t;
     signal pc_in, pc_out : address_t;
     signal ctrl_alu_b, ctrl_alu_c : std_logic;
     signal status : status_t;
-     signal b_out: word_t;
+    signal b_out: word_t;
+    signal ctrl_wait_mem : std_logic;
 
-    constant t_clk  : time := 5  ns;
+    constant t_clk  : time := 8  ns;
     constant t_wait : time := 20 ns;
 
 begin
 
-    uut : component EX_stage port map (clk        => clk,
-                                       rst        => rst,
-                                       ctrl_op    => ctrl_op,
-                                       imm        => imm,
-                                       b_in       => b_in,
-                                                    b_out      => b_out,
-                                       c          => c,
-                                       pc_in      => pc_in,
-                                       pc_out     => pc_out,
-                                       alu_res    => alu_res,
-                                       status     => status,
-                                       ctrl_alu_b => ctrl_alu_b,
-                                       ctrl_alu_c => ctrl_alu_c,
-                                       mdr_out    => mdr_out
-                                      );
+    uut : component EX_stage
+        port map (
+            clk           => clk,
+            rst           => rst,
+            ctrl_op       => ctrl_op,
+            imm           => imm,
+            b_in          => b_in,
+            b_out         => b_out,
+            c             => c,
+            pc_in         => pc_in,
+            pc_out        => pc_out,
+            alu_res       => alu_res,
+            status        => status,
+            ctrl_alu_b    => ctrl_alu_b,
+            ctrl_alu_c    => ctrl_alu_c,
+            ctrl_wait_mem => ctrl_wait_mem,
+            mdr_out       => mdr_out);
 
-    clk_p : process is
-    begin
-        clk <= '0';
-        wait for t_clk / 2;
-        clk <= '1';
-        wait for t_clk / 2;
-    end process clk_p;
+    clk <= not clk after t_clk/2;
+
+    ctrl_wait_mem <= '0';
 
     stimulus : process is
     begin
