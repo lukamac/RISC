@@ -101,9 +101,9 @@ begin
     --end process;
 
     set_z: block is
-        signal first : std_logic_vector(WORD_SIZE/2 - 1 downto 0);
+        signal first  : std_logic_vector(WORD_SIZE/2 - 1 downto 0);
         signal second : std_logic_vector(WORD_SIZE/4 - 1 downto 0);
-        signal third : std_logic_vector(WORD_SIZE/8 - 1 downto 0);
+        signal third  : std_logic_vector(WORD_SIZE/8 - 1 downto 0);
         signal fourth : std_logic_vector(WORD_SIZE/16 - 1 downto 0);
     begin
         first_stage: for I in 0 to WORD_SIZE/2 - 1
@@ -114,25 +114,25 @@ begin
 
         second_stage: for I in 0 to WORD_SIZE/4 - 1
         generate
-            second(I) <= '1' when first(I*2) = '0' and first(I*2+1) = '0' else
+            second(I) <= '1' when first(I*2) = '1' and first(I*2+1) = '1' else
                          '0';
         end generate;
 
         third_stage: for I in 0 to WORD_SIZE/8 - 1
         generate
-            third(I) <= '1' when second(I*2) = '0' and second(I*2+1) = '0' else
+            third(I) <= '1' when second(I*2) = '1' and second(I*2+1) = '1' else
                          '0';
         end generate;
 
         fourth_stage: for I in 0 to WORD_SIZE/16 - 1
         generate
-            fourth(I) <= '1' when third(I*2) = '0' and third(I*2+1) = '0' else
+            fourth(I) <= '1' when third(I*2) = '1' and third(I*2+1) = '1' else
                          '0';
         end generate;
 
         fifth_stage: for I in 0 to WORD_SIZE/32 - 1
         generate
-            z_flag <= '1' when fourth(I*2) = '0' and fourth(I*2+1) = '0' else
+            z_flag <= '1' when fourth(I*2) = '1' and fourth(I*2+1) = '1' else
                          '0';
         end generate;
 
