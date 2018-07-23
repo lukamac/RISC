@@ -6,6 +6,14 @@ library work;
 use work.RISC_const_and_types.all;
 use work.OP_CODES.all;
 
+----------------------------------------------
+--                                          --
+--                  ALU                     --
+--                                          --
+-- Performs operation, specified by op, on  --
+-- operands b and c and gives produces a    --
+-- result res.                              --
+----------------------------------------------
 
 entity alu is
     port
@@ -79,16 +87,22 @@ begin
     -- Shifters
     s_amt <= c(s_amount_t'range);
 
-    rts : component right_tri_shifter port map(op  => op,
-                                               a   => b,
-                                               amt => s_amt,
-                                               res => rts_res
-                                              );
+    rts : component right_tri_shifter
+        port map(
+            op  => op,
+            a   => b,
+            amt => s_amt,
+            res => rts_res);
 
-    ls  : component left_shifter      port map(a   => b,
-                                               amt => s_amt,
-                                               res => ls_res
-                                              );
+    ls  : component left_shifter
+        port map(
+            a   => b,
+            amt => s_amt,
+            res => ls_res);
+
+    -- TODO
+    -- Implement structural abstraction for everything.
+    --   Consistency in abstraction!
 
     -- Logical operations
     not_c <= not c;
