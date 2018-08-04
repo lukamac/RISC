@@ -5,6 +5,7 @@ use ieee.numeric_std.all;
 library work;
 use work.RISC_const_and_types.all;
 use work.op_codes.all;
+use work.shifter_pkg.all;
 
 
 entity left_shifter is

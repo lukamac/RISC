@@ -100,6 +100,7 @@ begin
     --    end if;
     --end process;
 
+    -- TODO Izvadi komparator u svoj modul!
     set_z: block is
         signal first  : std_logic_vector(WORD_SIZE/2 - 1 downto 0);
         signal second : std_logic_vector(WORD_SIZE/4 - 1 downto 0);

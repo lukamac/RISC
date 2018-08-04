@@ -6,6 +6,7 @@ use ieee.numeric_std.all;
 library work;
 use work.RISC_const_and_types.all;
 use work.OP_CODES.all;
+use work.shifter_pkg.all;
 
 
 entity right_tri_shifter is
