@@ -33,16 +33,23 @@ end IF_stage;
 architecture rtl of IF_stage is
 
     signal pc_reg   : address_t := (others => '0'); -- Program counter register
-    signal pc_add_4 : unsigned(address_t'range)  := (others => '0');
+    -- signal pc_add_4 : unsigned(address_t'range)  := (others => '0');
     signal pc_next  : address_t := (others => '0'); -- Next value for program counter register
-    signal pc_reg_en : std_logic;
+
+    function increment_address(address : address_t)
+        return address_t is
+    begin
+        return address_t(unsigned(address) + 4);
+    end function increment_address;
 
 begin
 
     -- PC register process
     pc_reg_proc: process(clk) is
+        variable pc_reg_en : std_logic;
     begin
         if (rising_edge(clk)) then
+            pc_reg_en := not ctrl_wait_mem;
             if(rst = '1') then
                 pc_reg <= (others => '0');
             elsif(pc_reg_en = '1') then
@@ -51,14 +58,12 @@ begin
         end if;
     end process pc_reg_proc;
 
-    pc_reg_en <= not ctrl_wait_mem;
-
     -- PC incrementer
-    pc_add_4 <= unsigned(pc_reg) + 4;
+    -- pc_add_4 <= unsigned(pc_reg) + 4;
 
     -- PC input mux
     with ctrl_pc_in_mux select
-        pc_next <=  std_logic_vector(pc_add_4) when '0',
+        pc_next <=  increment_address(pc_reg) when '0',
                     b_in when others;
 
     -- IR output
@@ -68,6 +73,6 @@ begin
     instr_addr <= pc_reg;
 
     -- PC output
-    pc_out <= std_logic_vector(pc_add_4);
+    pc_out <= pc_next;
 
 end rtl;

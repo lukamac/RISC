@@ -55,8 +55,7 @@ architecture rtl of OF_stage is
               );
 	end component sign_extension;	
 
-    signal pc_reg, pc_next : word_t;
-    signal reg_en : std_logic;
+    signal pc_reg : word_t;
 
 begin
 
@@ -77,21 +76,18 @@ begin
     );
     
     pc_buffer: process (clk) is
+        variable reg_en : std_logic;
     begin
         if (rising_edge(clk)) then
+            reg_en := not ctrl_wait_mem;
             if (rst = '1') then
                 pc_reg <= (others => '0');
             elsif (reg_en = '1') then
-                pc_reg <= pc_next;
+                pc_reg <= pc_in;
             end if;
         end if;
     end process pc_buffer;
     
-    pc_next <= pc_in;
-
-    reg_en <= not ctrl_wait_mem;
-
-           
     pc_out <= pc_reg;
 
 end architecture rtl;

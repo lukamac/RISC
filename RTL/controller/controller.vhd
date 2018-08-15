@@ -14,7 +14,7 @@ entity controller is
 
         -- IF stage control signals
         pc_in_mux : out std_logic; -- PC input selection mux control signal
-        
+
         -- OF stage control signals
         imm_out       : out immediate_t; -- immediate constant from instruction
         reg_b_adr     : out reg_address_t; -- register b address
@@ -34,7 +34,7 @@ entity controller is
         reg_a_we  : out std_logic; -- register a write enable signal
         reg_a_adr : out reg_address_t; -- register a address
         wb_mux    : out std_logic;
-        
+
         -- Global control signals
         wait_mem  : out std_logic
     );
@@ -111,7 +111,7 @@ begin
         imm_out   <= imm;
         reg_b_adr <= b_adr;
         reg_c_adr <= c_adr;
-        
+
         case op is
             when ST_OP | STI_OP =>
                 reg_c_adr <= a_adr;
@@ -119,7 +119,7 @@ begin
                 null;
         end case;
     end process OF_st;
-    
+
 
     EX: process (instr_reg(EX_stage)) is
         alias op is instr_reg(EX_stage)(31 downto 27);
@@ -145,6 +145,41 @@ begin
     MEM: process (instr_reg(MEM_stage), status_reg) is
         alias op        is instr_reg(MEM_stage)(31 downto 27);
         alias condition is instr_reg(MEM_stage)(2 downto 0);
+
+        function is_branch(
+            condition : std_logic_vector(2 downto 0); 
+            status : status_t
+        ) return std_logic is
+            variable branch : std_logic;
+        begin
+            branch := '0';
+            case condition is
+                when AL =>
+                    branch := '1';
+                when NV =>
+                    branch := '0';
+                when ZR =>
+                    if(status(Z) = '1') then
+                        branch := '1';
+                    end if;
+                when NZ =>
+                    if(status(Z) = '0') then
+                        branch := '1';
+                    end if;
+                when PL =>
+                    if(status(S) = '0') then
+                        branch := '1';
+                    end if;
+                when MI =>
+                    if(status(S) = '1') then
+                        branch := '1';
+                    end if;
+                when others =>
+                    null;
+            end case;
+            return branch;
+        end function is_branch;
+
     begin
         data_rd     <= '0';
         data_wr     <= '0';
@@ -157,72 +192,10 @@ begin
             when ST_OP | STI_OP =>
                 data_wr <= '1';
             when BR_OP =>
-                case condition is
-                    when AL =>
-                        branch <= '1';
-                    when NV =>
-                        branch <= '0';
-                    when ZR =>
-                        if(status_reg(Z) = '1') then
-                            branch <= '1';
-                        else
-                            branch <= '0';
-                        end if;
-                    when NZ =>
-                        if(status_reg(Z) = '0') then
-                            branch <= '1';
-                        else
-                            branch <= '0';
-                        end if;
-                    when PL =>
-                        if(status_reg(S) = '0') then
-                            branch <= '1';
-                        else
-                            branch <= '0';
-                        end if;
-                    when MI =>
-                        if(status_reg(S) = '1') then
-                            branch <= '1';
-                        else
-                            branch <= '0';
-                        end if;
-                    when others =>
-                        null;
-                end case;
+                branch <= is_branch(condition, status_reg);
             when BRL_OP =>
                 alu_res_mux <= '1';
-                case condition is
-                    when AL =>
-                        branch <= '1';
-                    when NV =>
-                        branch <= '0';
-                    when ZR =>
-                        if(status_reg(Z) = '1') then
-                            branch <= '1';
-                        else
-                            branch <= '0';
-                        end if;
-                    when NZ =>
-                        if(status_reg(Z) = '0') then
-                            branch <= '1';
-                        else
-                            branch <= '0';
-                        end if;
-                    when PL =>
-                        if(status_reg(S) = '0') then
-                            branch <= '1';
-                        else
-                            branch <= '0';
-                        end if;
-                    when MI =>
-                        if(status_reg(S) = '1') then
-                            branch <= '1';
-                        else
-                            branch <= '0';
-                        end if;
-                    when others =>
-                        null;
-                end case;
+                branch <= is_branch(condition, status_reg);
             when others =>
                 null;
         end case;
@@ -252,7 +225,7 @@ begin
             when BRL_OP =>
                 reg_a_we <= '1';
             when LA_OP | LAI_OP =>
-            	reg_a_we <= '1';
+                reg_a_we <= '1';
             when LD_OP | LDI_OP =>
                 reg_a_we <= '1';
                 wb_mux   <= '1';

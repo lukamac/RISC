@@ -55,6 +55,7 @@ begin
 
         ls_res                    when SHL_OP   | SHLI_OP,
 
+        -- TODO dodati tocno za koje je c, i onda za others staviti 0
         c                         when others;
 
 
